@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Desafio Diagnóstico: Ambulatório de Casos Clínicos</title>
+    
+    <!-- Configurações PWA e Mobile -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a365d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="EndócrinoApp">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <style>
+        :root {
+            --primary: #1a365d;
+            --secondary: #2b6cb0;
+            --accent: #2e8540;
+            --danger: #c53030;
+            --warning: #dd6b20;
+            --bg-page: #edf2f7;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            margin: 0;
+            padding: 12px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px 16px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0 0 6px 0;
+            font-size: 1.5rem;
+        }
+
+        header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 0.85rem;
+        }
+
+        .status-bar {
+            background-color: #e2e8f0;
+            padding: 10px 16px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #cbd5e0;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .jump-box {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .jump-box select {
+            padding: 6px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            max-width: 170px;
+            border: 1.5px solid #a0aec0;
+            background-color: white;
+        }
+
+        .btn-nav-mini {
+            background-color: #cbd5e0;
+            border: 1px solid #a0aec0;
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .game-body {
+            padding: 16px;
+        }
+
+        .patient-card {
+            background-color: #f7fafc;
+            border-left: 5px solid var(--secondary);
+            padding: 14px;
+            margin-bottom: 16px;
+            border-radius: 4px;
+        }
+
+        .patient-card h2 {
+            margin: 0 0 6px 0;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .section-header {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-top: 16px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-bottom: 2px solid #edf2f7;
+            padding-bottom: 4px;
+        }
+
+        .grid-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        button.action-btn {
+            background-color: #ffffff;
+            border: 1.5px solid #cbd5e0;
+            color: var(--text-main);
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-align: left;
+        }
+
+        button.action-btn:active {
+            background-color: #ebf8ff;
+        }
+
+        .dialogue-box {
+            background-color: #ebf8ff;
+            border-left: 4px solid var(--secondary);
+            border-radius: 6px;
+            padding: 12px;
+            min-height: 44px;
+            font-size: 0.95rem;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .lab-order-box {
+            background-color: #f8fafc;
+            border: 1.5px solid #cbd5e0;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .lab-select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1.5px solid #cbd5e0;
+            font-size: 0.9rem;
+            background-color: white;
+            box-sizing: border-box;
+        }
+
+        .btn-order {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .lab-table-container {
+            overflow-x: auto;
+            margin-bottom: 16px;
+        }
+
+        table.lab-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        table.lab-table th, table.lab-table td {
+            border: 1px solid #e2e8f0;
+            padding: 8px;
+            text-align: left;
+        }
+
+        table.lab-table th {
+            background-color: #f7fafc;
+            color: var(--primary);
+        }
+
+        .status-badge {
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .badge-altered {
+            background-color: #fed7d7;
+            color: var(--danger);
+        }
+
+        .badge-normal {
+            background-color: #c6f6d5;
+            color: var(--accent);
+        }
+
+        .differential-box {
+            background: #fffaf0;
+            border: 1px solid #feebc8;
+            padding: 14px;
+            border-radius: 8px;
+            margin-top: 14px;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 10px;
+            border: 1.5px solid #cbd5e0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        button.btn-submit {
+            background-color: var(--accent);
+            color: white;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .feedback-box {
+            display: none;
+            padding: 14px;
+            border-radius: 6px;
+            margin-top: 12px;
+            line-height: 1.4;
+            font-size: 0.88rem;
+        }
+
+        .feedback-correct {
+            background-color: #c6f6d5;
+            border: 1.5px solid #9ae6b4;
+            color: #22543d;
+        }
+
+        .feedback-incorrect {
+            background-color: #fed7d7;
+            border: 1.5px solid #feb2b2;
+            color: #742a2a;
+        }
+
+        button.btn-next {
+            display: none;
+            background-color: var(--primary);
+            color: white;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border: none;
+            margin-top: 10px;
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Simulador Clínico</h1>
+        <p>Anamnese, Investigação Laboratorial & Diagnóstico</p>
+    </header>
+
+    <div class="status-bar">
+        <span id="case-progress">Caso 1 de 50</span>
+        <div class="jump-box">
+            <button class="btn-nav-mini" onclick="casoAnterior()">◀</button>
+            <select id="jump-select"></select>
+            <button class="btn-nav-mini" onclick="proximoCaso()">▶</button>
+        </div>
+        <span id="score-display">Pontos: 0</span>
+    </div>
+
+    <div class="game-body">
+        <div class="patient-card">
+            <h2 id="patient-name">Nome do Paciente</h2>
+            <p id="patient-description" style="margin: 0; line-height: 1.4;"></p>
+        </div>
+
+        <div class="section-header">1. Anamnese Dirigida</div>
+        <div class="grid-buttons">
+            <button class="action-btn" onclick="fazerPergunta('historia')">🗣️ Queixa & Evolução</button>
+            <button class="action-btn" onclick="fazerPergunta('revisao')">💧 Revisão de Sistemas</button>
+            <button class="action-btn" onclick="fazerPergunta('habitos')">💊 Medicamentos & Hábitos</button>
+            <button class="action-btn" onclick="fazerPergunta('exame_fisico')">🔍 Exame Físico Específico</button>
+        </div>
+        <div class="dialogue-box" id="dialogue-text">
+            Toque em uma das opções acima para interrogar o paciente...
+        </div>
+
+        <div class="section-header">2. Requisição Laboratorial Livre</div>
+        <div class="lab-order-box">
+            <select id="exam-select" class="lab-select">
+                <option value="">-- Selecione o Parâmetro Laboratorial / Imagem --</option>
+                <optgroup label="Hormônios & Eixos">
+                    <option value="tsh">TSH</option>
+                    <option value="t4l">T4 Livre</option>
+                    <option value="t3">T3 Total</option>
+                    <option value="cortisol_8h">Cortisol Sérico Basal (8h)</option>
+                    <option value="cortisol_salivar">Cortisol Noturno (23h) / Supressão</option>
+                    <option value="acth">ACTH Plasmático</option>
+                    <option value="gh">GH Basal / Testes de GH</option>
+                    <option value="igf1">IGF-1 Plasmático</option>
+                    <option value="prolactina">Prolactina Sérica</option>
+                    <option value="insulina">Insulina Sérica</option>
+                    <option value="peptideo_c">Peptídeo C Sérico</option>
+                    <option value="glucagon">Glucagon Plasmático</option>
+                    <option value="aldosterona_renina">Aldosterona & Renina (ARR)</option>
+                    <option value="metanefrinas">Metanefrinas Plasmáticas/Urinárias</option>
+                    <option value="17ohp">17-Hidroxiprogesterona</option>
+                    <option value="adh">ADH / Teste com dDAVP</option>
+                </optgroup>
+                <optgroup label="Bioquímica, Eletrólitos & Urina">
+                    <option value="glicemia">Glicemia de Jejum / HbA1c</option>
+                    <option value="sodio">Sódio Sérico (Na+)</option>
+                    <option value="potassio">Potássio Sérico (K+)</option>
+                    <option value="osmolalidade_u">Osmolalidade / Densidade Urinária</option>
+                    <option value="sodio_u">Sódio Urinário (Na+ Urinário)</option>
+                    <option value="gasometria">Gasometria Arterial / pH / Bicarbonato</option>
+                    <option value="cetonas">Cetonemia / Cetonúria</option>
+                    <option value="lipides">Perfil Lipídico</option>
+                </optgroup>
+                <optgroup label="Anticorpos & Imagem">
+                    <option value="trab">Anticorpo TRAb</option>
+                    <option value="anti_tpo">Anticorpo Anti-TPO</option>
+                    <option value="anti_gad">Anticorpos do Diabetes (Anti-GAD)</option>
+                    <option value="bhcg">Beta-hCG Quantitativo</option>
+                    <option value="vhs">VHS / PCR</option>
+                    <option value="rm_sela">RM de Sela Túrcica / Crânio</option>
+                    <option value="us_cervical">US / Cintilografia de Tireoide</option>
+                    <option value="tc_abdome">TC / RM de Abdômen (Adrenal/Pâncreas)</option>
+                </optgroup>
+            </select>
+            <button class="btn-order" onclick="solicitarExameEspecifico()">Solicitar Exame ➔</button>
+        </div>
+
+        <div class="lab-table-container">
+            <table class="lab-table" id="lab-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Exame</th>
+                        <th>Resultado</th>
+                        <th>Referência</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="lab-tbody"></tbody>
+            </table>
+        </div>
+
+        <div class="differential-box">
+            <div class="section-header" style="margin-top: 0; border: none; padding: 0 0 6px 0;">3. Diagnóstico Diferencial</div>
+            <p style="font-size: 0.85rem; color: #7b341e; margin: 0 0 8px 0;">Selecione a hipótese exata:</p>
+            <div class="options-list" id="options-container"></div>
+            <button class="btn-submit" onclick="avaliarEscolha()">Confirmar Hipótese Diagnóstica</button>
+            <div class="feedback-box" id="feedback-card"></div>
+            <button class="btn-next" id="btn-next-case" onclick="proximoCaso()">Próximo Caso Clínico ➔</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Registro do Service Worker para o PWA
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('PWA Service Worker Ativo! Escopo:', reg.scope))
+                .catch(err => console.error('Falha no Service Worker:', err));
+        });
+    }
+
+    // Banco de normalidade fisiológica de reserva
+    const referenciaPadrao = {
+        tsh: { nome: "TSH", res: "1.8 μUI/mL", ref: "0.4 a 4.0 μUI/mL", alt: false },
+        t4l: { nome: "T4 Livre", res: "1.2 ng/dL", ref: "0.8 a 1.8 ng/dL", alt: false },
+        t3: { nome: "T3 Total", res: "125 ng/dL", ref: "80 a 200 ng/dL", alt: false },
+        cortisol_8h: { nome: "Cortisol Sérico (8h)", res: "14.2 μg/dL", ref: "5.0 a 25.0 μg/dL", alt: false },
+        cortisol_salivar: { nome: "Cortisol Salivar (23h)", res: "0.06 μg/dL", ref: "< 0.10 μg/dL", alt: false },
+        acth: { nome: "ACTH Plasmático", res: "24 pg/mL", ref: "10 a 60 pg/mL", alt: false },
+        gh: { nome: "GH Basal", res: "0.8 ng/mL", ref: "< 3.0 ng/mL", alt: false },
+        igf1: { nome: "IGF-1 Plasmático", res: "185 ng/mL", ref: "115 a 300 ng/mL", alt: false },
+        prolactina: { nome: "Prolactina Sérica", res: "12 ng/mL", ref: "< 25 ng/mL", alt: false },
+        insulina: { nome: "Insulina de Jejum", res: "8.5 μUI/mL", ref: "2.0 a 20.0 μUI/mL", alt: false },
+        peptideo_c: { nome: "Peptídeo C Sérico", res: "2.1 ng/mL", ref: "1.1 a 4.4 ng/mL", alt: false },
+        glucagon: { nome: "Glucagon Plasmático", res: "85 pg/mL", ref: "50 a 150 pg/mL", alt: false },
+        aldosterona_renina: { nome: "Aldosterona & Renina", res: "Aldosterona: 9 ng/dL | Renina: 1.4 ng/mL/h (ARR: 6.4)", ref: "ARR < 30", alt: false },
+        metanefrinas: { nome: "Metanefrinas Livres", res: "Normetanefrina: 0.35 nmol/L | Metanefrina: 0.18 nmol/L", ref: "Normal", alt: false },
+        "17ohp": { nome: "17-OH-Progesterona", res: "0.9 ng/mL", ref: "< 2.0 ng/mL", alt: false },
+        adh: { nome: "ADH Plasmático", res: "2.4 pg/mL", ref: "1.0 a 5.0 pg/mL", alt: false },
+        glicemia: { nome: "Glicemia / HbA1c", res: "Glicemia: 86 mg/dL | HbA1c: 5.2%", ref: "Glic: 70-99 | HbA1c: <5.7%", alt: false },
+        sodio: { nome: "Sódio Sérico (Na+)", res: "140 mEq/L", ref: "135 a 145 mEq/L", alt: false },
+        potassio: { nome: "Potássio Sérico (K+)", res: "4.2 mEq/L", ref: "3.5 a 5.0 mEq/L", alt: false },
+        osmolalidade_u: { nome: "Osmolalidade Urinária", res: "Osm: 620 mOsm/kg | Dens: 1.018", ref: "Osm: 500-800", alt: false },
+        sodio_u: { nome: "Sódio Urinário", res: "22 mEq/L", ref: "< 40 mEq/L", alt: false },
+        gasometria: { nome: "Gasometria Arterial", res: "pH: 7.41 | Bicarbonato: 24 mEq/L | pCO2: 39", ref: "pH: 7.35-7.45", alt: false },
+        cetonas: { nome: "Corpos Cetônicos", res: "Cetonemia: 0.1 mmol/L | Cetonúria: Negativa", ref: "< 0.6 mmol/L", alt: false },
+        lipides: { nome: "Perfil Lipídico", res: "Colesterol Total: 172 mg/dL | Triglicerídeos: 110 mg/dL", ref: "Normal", alt: false },
+        trab: { nome: "Anticorpo TRAb", res: "< 0.5 UI/L (Não Reagente)", ref: "< 1.75 UI/L", alt: false },
+        anti_tpo: { nome: "Anticorpo Anti-TPO", res: "12 UI/mL (Negativo)", ref: "< 35 UI/mL", alt: false },
+        anti_gad: { nome: "Anti-GAD65", res: "< 1.0 U/mL (Negativo)", ref: "< 5.0 U/mL", alt: false },
+        bhcg: { nome: "Beta-hCG Quantitativo", res: "< 2 mUI/mL (Negativo)", ref: "< 5 mUI/mL", alt: false },
+        vhs: { nome: "VHS / PCR", res: "VHS: 10 mm/1ªh | PCR: 1.8 mg/L", ref: "VHS: < 20 mm/h", alt: false },
+        rm_sela: { nome: "RM de Sela Túrcica", res: "Adenoipófise de volume, sinal e morfologia normais.", ref: "Anatômico", alt: false },
+        us_cervical: { nome: "US / Cintilografia Cervical", res: "Tireoide anatômica e ecotextura normal.", ref: "Normal", alt: false },
+        tc_abdome: { nome: "TC / RM de Abdômen", res: "Adrenais e pâncreas de aspecto e atenuação normais.", ref: "Normal", alt: false }
+    };
+
+    // Casos clínicos completos com os 50 diagnósticos
+    const casos = [
+        {
+            id: 1,
+            nome: "Mariana Vasconcelos, 26 anos",
+            apresentacao: "Mulher jovem com amenorreia secundária há 7 meses e secreção láctea bilateral espontânea nas mamas.",
+            perguntas: {
+                historia: "Minha menstruação parou do nada e notei leite vazando na minha blusa.",
+                revisao: "Não sinto dor de cabeça e minha visão está perfeita.",
+                habitos: "Não tomo remédios controlados. Teste de gravidez de farmácia deu negativo.",
+                exame_fisico: "Expressão papilar bilateral com galactorreia verdadeira leitosa. Sem bócio ou alterações visuais."
+            },
+            labsEspecificos: {
+                prolactina: { nome: "Prolactina Sérica", res: "125 ng/mL (Moderadamente Alta)", ref: "< 25 ng/mL", alt: true },
+                rm_sela: { nome: "RM de Sela Túrcica", res: "Microadenoma hipofisário de 6 mm em asa lateral da adenoipófise sem extensão suprasselar.", ref: "Normal", alt: true }
+            },
+            correto: "Prolactinoma (microadenoma)",
+            diferenciais: ["Hiperprolactinemia induzida por antipsicótico", "Hiperprolactinemia secundária a hipotireoidismo primário", "Hiperprolactinemia fisiológica da gestação"],
+            explicacao: "Microadenoma lactotrófico produtor de prolactina autônoma. Diferencial com gestação descartado por beta-hCG negativo; hipotireoidismo descartado por TSH normal; e fármacos excluídos pela ausência de drogas antidopaminérgicas."
+        },
+        {
+            id: 2,
+            nome: "Carlos Eduardo, 42 anos",
+            apresentacao: "Homem com cefaleia temporal progressiva, perda da visão periférica lateral e perda de libido.",
+            perguntas: {
+                historia: "Vivo trombando nas portas dos dois lados e sinto uma dor de cabeça constante atrás dos olhos.",
+                revisao: "Disfunção erétil completa há 1 ano e cansaço visual constante.",
+                habitos: "Sem uso de remédios.",
+                exame_fisico: "Campimetria computadorizada confirmando hemianopsia bitemporal por compressão quiasmática."
+            },
+            labsEspecificos: {
+                prolactina: { nome: "Prolactina Sérica", res: "1.450 ng/mL (Maciçamente Elevada)", ref: "< 20 ng/mL", alt: true },
+                rm_sela: { nome: "RM de Crânio / Sela Túrcica", res: "Macroadenoma hipofisário de 32 mm com expansão suprasselar e compressão direta do quiasma óptico.", ref: "Normal", alt: true }
+            },
+            correto: "Macroprolactinoma com efeito de massa",
+            diferenciais: ["Prolactinoma (microadenoma)", "Hiperprolactinemia de desconexão por craniofaringioma", "Hipoprolactinemia por síndrome de Sheehan"],
+            explicacao: "Macroprolactinoma caracterizado por lesão > 10 mm associada a prolactina em níveis maciços (> 200-500 ng/mL) e síndrome compressiva quiasmática. Diferencia-se do craniofaringioma pois este causa prolactina moderadamente elevada (< 150 ng/mL) por compressão da haste."
+        },
+        {
+            id: 3,
+            nome: "Fabiana Prado, 31 anos",
+            apresentacao: "Mulher em tratamento psiquiátrico recente desenvolvendo galactorreia e amenorreia.",
+            perguntas: {
+                historia: "Comecei um novo remédio prescrito pelo psiquiatra há 6 semanas e o leite começou a sair.",
+                revisao: "Sem cefaleia ou alterações visuais.",
+                habitos: "Uso contínuo de Risperidona 4 mg/dia para transtorno bipolar.",
+                exame_fisico: "Galactorreia à expressão. Sem queixas neurológicas."
+            },
+            labsEspecificos: {
+                prolactina: { nome: "Prolactina Sérica", res: "78 ng/mL (Elevação Leve a Moderada)", ref: "< 25 ng/mL", alt: true },
+                rm_sela: { nome: "RM de Sela Túrcica", res: "Sela túrcica e adenoipófise anatômica e morfologicamente normais, sem tumores.", ref: "Normal", alt: false }
+            },
+            correto: "Hiperprolactinemia induzida por antipsicótico (risperidona)",
+            diferenciais: ["Prolactinoma (microadenoma)", "Hiperprolactinemia de desconexão por craniofaringioma", "Macroprolactinoma com efeito de massa"],
+            explicacao: "A risperidona é um potente antagonista dos receptores dopaminérgicos D2 nos lactotrofos hipofisários. Como a dopamina hipotalâmica é o principal inibidor tônico da prolactina, o bloqueio farmacológico resulta em desinibição e hiperprolactinemia, com RM selar estritamente normal."
+        },
+        {
+            id: 4,
+            nome: "Sônia Regina, 47 anos",
+            apresentacao: "Mulher com astenia severa, sonolência diurna, pele seca, constipação e secreção láctea mamária.",
+            perguntas: {
+                historia: "Engordei, sinto um cansaço infinito e notei galactorreia espontânea.",
+                revisao: "Intolerância severa ao frio, pele muito áspera e reflexos lentos.",
+                habitos: "Não usa medicações psicotrópicas.",
+                exame_fisico: "Bócio difuso tireoidiano palpável e mixedema periorbital."
+            },
+            labsEspecificos: {
+                tsh: { nome: "TSH", res: "78.0 μUI/mL (Maciçamente Alto)", ref: "0.4 a 4.0 μUI/mL", alt: true },
+                t4l: { nome: "T4 Livre", res: "0.2 ng/dL (Extremamente Baixo)", ref: "0.8 a 1.8 ng/dL", alt: true },
+                prolactina: { nome: "Prolactina Sérica", res: "65 ng/mL (Moderadamente Elevada)", ref: "< 25 ng/mL", alt: true },
+                anti_tpo: { nome: "Anti-TPO", res: "620 UI/mL (Positivo)", ref: "< 35 UI/mL", alt: true }
+            },
+            correto: "Hiperprolactinemia secundária a hipotireoidismo primário não tratado",
+            diferenciais: ["Prolactinoma (microadenoma)", "Tireoidite de Hashimoto com hipotireoidismo subclínico", "Hiperprolactinemia induzida por antipsicótico (risperidona)"],
+            explicacao: "A queda primária de T3 e T4 estimula intensamente o hipotálamo a secretar TRH por feedback negativo. O TRH atua não apenas nos tireotrofos estimulando TSH, mas também tem ação parácrina/endócrina potente nos lactotrofos, estimulando a síntese e secreção de prolactina."
+        },
+        {
+            id: 5,
+            nome: "Leandro Toledo, 19 anos",
+            apresentacao: "Jovem com retardo puberal, cefaleia crônica, redução concêntrica de campo visual e prolactina moderadamente elevada.",
+            perguntas: {
+                historia: "Tenho dor de cabeça há meses e comecei a enxergar mal dos lados.",
+                revisao: "Ausência de pelos faciais e libido diminuída.",
+                habitos: "Nenhum histórico medicamentoso.",
+                exame_fisico: "Estádios puberais de Tanner reduzidos; hemianopsia bitemporal à campimetria."
+            },
+            labsEspecificos: {
+                prolactina: { nome: "Prolactina Sérica", res: "85 ng/mL (Efeito Haste: < 150 ng/mL)", ref: "< 20 ng/mL", alt: true },
+                rm_sela: { nome: "RM Encefálica", res: "Massa selar e suprasselar com componente cístico e calcificações periféricas, comprimindo a haste hipofisária.", ref: "Normal", alt: true }
+            },
+            correto: "Hiperprolactinemia de desconexão por craniofaringioma",
+            diferenciais: ["Macroprolactinoma com efeito de massa", "Prolactinoma (microadenoma)", "Panhipopituitarismo com deficiência de GH após apoplexia hipofisária"],
+            explicacao: "Craniofaringioma com efeito de haste ('efeito stalk'). O tumor comprime a haste hipofisária e obstrui os vasos portais longos, impedindo que a dopamina hipotalâmica chegue aos lactotrofos. Isso desinibe a prolactina (< 150 ng/mL)."
+        },
+        {
+            id: 6,
+            nome: "Patrícia Gomes, 33 anos",
+            apresentacao: "Portadora de prolactinoma em uso de dose máxima de cabergolina persistindo com macroadenoma e prolactina elevada.",
+            perguntas: {
+                historia: "Tomo 3 mg de cabergolina por semana há mais de 6 meses e meus exames não normalizam nem o tumor encolhe.",
+                revisao: "Persistência de amenorreia e galactorreia diária volumosa.",
+                habitos: "Adesão farmacológica rigorosa supervisionada.",
+                exame_fisico: "Galactorreia evidente; RM repetida sem redução dimensional."
+            },
+            labsEspecificos: {
+                prolactina: { nome: "Prolactina Sérica em Tratamento", res: "310 ng/mL (Sem redução satisfatória)", ref: "< 25 ng/mL", alt: true },
+                rm_sela: { nome: "RM Comparativa de Sela Túrcica", res: "Macroadenoma de 18 mm sem qualquer redução dimensional após 6 meses de agonista D2.", ref: "Normal", alt: true }
+            },
+            correto: "Prolactinoma resistente a agonista dopaminérgico (cabergolina)",
+            diferenciais: ["Macroprolactinoma com efeito de massa", "Hiperprolactinemia de desconexão por craniofaringioma", "Prolactinoma (microadenoma)"],
+            explicacao: "Prolactinoma resistente a agonistas dopaminérgicos, definido pela falha na normalização dos níveis de prolactina e incapacidade de reduzir o diâmetro tumoral em pelo menos 50%, mesmo sob doses terapêuticas altas de cabergolina."
+        },
+        {
+            id: 7,
+            nome: "Juliana Neves, 28 anos",
+            apresentacao: "Mulher com amenorreia há 8 semanas, queixa de mamas túrgidas, náuseas matinais e prolactina elevada.",
+            perguntas: {
+                historia: "Minha menstruação atrasou 2 meses e estou preocupada achando que tenho tumor na cabeça porque saiu leite das mamas.",
+                revisao: "Náuseas frequentes pela manhã e aumento da frequência urinária diurna.",
+                habitos: "Não usa pílula há 4 meses (tentando engravidar).",
+                exame_fisico: "Aumento de volume mamário com escurecimento da aréola e tubérculos de Montgomery proeminentes."
+            },
+            labsEspecificos: {
+                prolactina: { nome: "Prolactina Sérica", res: "110 ng/mL (Elevada)", ref: "< 25 ng/mL", alt: true },
+                bhcg: { nome: "Beta-hCG Quantitativo", res: "48.500 mUI/mL (Francamente Positivo)", ref: "< 5 mUI/mL", alt: true }
+            },
+            correto: "Hiperprolactinemia fisiológica da gestação (dúvida diagnóstica)",
+            diferenciais: ["Prolactinoma (microadenoma)", "Hiperprolactinemia induzida por antipsicótico (risperidona)", "Hiperprolactinemia secundária a hipotireoidismo primário não tratado"],
+            explicacao: "Aumento fisiológico da prolactina promovido pelo estímulo estrogênico placentário maciço sobre os lactotrofos durante a gravidez (comprovada por beta-hCG e ecografia), não se tratando de afecção neoplásica."
+        },
+        {
+            id: 8,
+            nome: "Beatriz Nogueira, 30 anos",
+            apresentacao: "Puérpera há 3 semanas com histórico de hemorragia grave no parto, incapacidade absoluta de amamentar (agalactia) e fraqueza severa.",
+            perguntas: {
+                historia: "Quase morri de hemorragia no parto do meu bebê e precisei receber 4 bolsas de sangue. Desde então, não saiu uma gota de leite.",
+                revisao: "Frio intenso, queda dos pelos axilares e pubianos, fraqueza para levantar da cama.",
+                habitos: "Cesariana de emergência com choque hipovolêmico grave.",
+                exame_fisico: "Palidez cutâneo-mucosa importante, hipotensão postural (PA 80x50 mmHg), mamas flácidas sem colostro."
+            },
+            labsEspecificos: {
+                prolactina: { nome: "Prolactina Sérica", res: "< 1.5 ng/mL (Praticamente Indetectável no Puerpério)", ref: "> 80 ng/mL (no pós-parto)", alt: true },
+                acth: { nome: "ACTH Plasmático", res: "4 pg/mL (Abaixo do normal)", ref: "10 a 60 pg/mL", alt: true },
+                cortisol_8h: { nome: "Cortisol Sérico", res: "2.1 μg/dL (Baixo)", ref: "5 a 25 μg/dL", alt: true },
+                glicemia: { nome: "Glicemia de Jejum", res: "58 mg/dL (Hipoglicemia)", ref: "70 a 99 mg/dL", alt: true },
+                rm_sela: { nome: "RM de Sela Túrcica", res: "Sinal de necrose isquêmica hipofisária com colapso tecidual e esvaziamento selar incipiente.", ref: "Normal", alt: true }
+            },
+            correto: "Hipoprolactinemia por síndrome de Sheehan (necrose hipofisária pós-parto)",
+            diferenciais: ["Panhipopituitarismo com deficiência de GH após apoplexia hipofisária", "Tireoidite pós-parto", "Doença de Addison autoimune (insuficiência adrenal primária)"],
+            explicacao: "Síndrome de Sheehan: necrose isquêmica da adenoipófise hipertrofiada durante o choque hipovolêmico pós-parto. O sinal clínico clássico de abertura é o fracasso na lactogênese por deficiência absoluta de prolactina, associado a pan-hipopituitarismo."
+        },
+        {
+            id: 9,
+            nome: "Lucas Ferreira, 26 anos",
+            apresentacao: "Vítima de trauma crânio-encefálico apresentando poliúria abrupta de 11 litros ao dia e sede intensa por água gelada.",
+            perguntas: {
+                historia: "Bati a cabeça na moto há 10 dias e agora urino um balde d'água a cada duas horas.",
+                revisao: "Boca e lábios ressecados, nictúria incessante.",
+                habitos: "Sem comorbidades prévias.",
+                exame_fisico: "Sinais de desidratação, mucosas secas, turgor cutâneo diminuído."
+            },
+            labsEspecificos: {
+                adh: { nome: "ADH Plasmático & Teste com dDAVP", res: "ADH: < 0.5 pg/mL (Indetectável) | Resposta renal ao dDAVP: Osmolalidade sobe de 90 para 650 mOsm/kg", ref: "ADH: 1-5 pg/mL", alt: true },
+                sodio: { nome: "Sódio Sérico (Na+)", res: "153 mEq/L (Hipernatremia)", ref: "135 a 145 mEq/L", alt: true },
+                osmolalidade_u: { nome: "Osmolalidade Urinária & Densidade", res: "Osm: 90 mOsm/kg | Densidade: 1.002 (Muito Diluída)", ref: "Osm: > 500 | Dens: 1.015-1.025", alt: true },
+                rm_sela: { nome: "RM de Sela Túrcica", res: "Ausência do hipersinal fisiológico em T1 da neuroipófise.", ref: "Hipersinal presente", alt: true }
+            },
+            correto: "Diabetes insípida central pós-traumatismo cranioencefálico",
+            diferenciais: ["Diabetes insípida nefrogênica por uso crônico de lítio", "Polidipsia psicogênica mimetizando diabetes insípida", "Diabetes insípida gestacional (excesso de vasopressinase placentária)"],
+            explicacao: "Secção dos axônios do trato hipotálamo-hipofisário por fratura/trauma, abolindo a secreção de ADH na neuroipófise. A excelente resposta ao dDAVP exógeno comprova que o túbulo renal está íntegro e a falha é exclusivamente central."
+        },
+        {
+            id: 10,
+            nome: "Cláudio Vieira, 51 anos",
+            apresentacao: "Homem em tratamento para transtorno bipolar com poliúria e polidipsia refratárias ao dDAVP.",
+            perguntas: {
+                historia: "Urino sem parar há 3 meses e bebo água constantemente.",
+                revisao: "Sem déficits visuais ou traumas.",
+                habitos: "Uso de Carbonato de Lítio há 14 anos.",
+                exame_fisico: "Sinais de desidratação leve; normotenso."
+            },
+            labsEspecificos: {
+                adh: { nome: "ADH Plasmático & Teste com dDAVP", res: "ADH: 6.8 pg/mL (Normal-Alto) | Resposta ao dDAVP: Osmolalidade permanece inalterada em 120 mOsm/kg", ref: "Resposta renal nula", alt: true },
+                sodio: { nome: "Sódio Sérico", res: "148 mEq/L (Leve Hipernatremia)", ref: "135 a 145 mEq/L", alt: true },
+                osmolalidade_u: { nome: "Osmolalidade Urinária", res: "120 mOsm/kg (Inapropriadamente diluída)", ref: "> 500 mOsm/kg", alt: true }
+            },
+            correto: "Diabetes insípida nefrogênica por uso crônico de lítio",
+            diferenciais: ["Diabetes insípida central pós-traumatismo cranioencefálico", "Polidipsia psicogênica mimetizando diabetes insípida", "Diabetes insípida central idiopática/autoimune em criança"],
+            explicacao: "O lítio acumula-se nas células principais dos ductos coletores renais via canais ENaC, inibindo a adenilil ciclase e a via da Aquaporina-2. O ADH central está normal ou alto, mas o rim é completamente refratário ao hormônio endógeno e ao dDAVP."
+        },
+        {
+            id: 11,
+            nome: "Valdemar Antunes, 66 anos",
+            apresentacao: "Tabagista pesado apresentando confusão mental progressiva, náuseas e hiponatremia profunda.",
+            perguntas: {
+                historia: "Família relata sonolência, perda de memória recente e tosse com sangue há 2 meses.",
+                revisao: "Sem edema periférico, sem vômitos volumosos ou diarreia.",
+                habitos: "Tabagismo 50 anos-maço.",
+                exame_fisico: "Paciente euvolêmico ao exame físico (sem edema e sem desidratação). Ausculta com roncos pulmonares."
+            },
+            labsEspecificos: {
+                sodio: { nome: "Sódio Sérico (Na+)", res: "118 mEq/L (Hiponatremia Severa Euvolêmica)", ref: "135 a 145 mEq/L", alt: true },
+                osmolalidade_u: { nome: "Osmolalidade Urinária", res: "520 mOsm/kg (Inapropriadamente Concentrada)", ref: "< 100 mOsm/kg em hiponatremia", alt: true },
+                sodio_u: { nome: "Sódio Urinário (Na+ Urinário)", res: "68 mEq/L (Natriurese elevada > 40)", ref: "< 20 mEq/L", alt: true }
+            },
+            correto: "SIADH paraneoplásica por carcinoma de pequenas células de pulmão",
+            diferenciais: ["SIADH induzida por ISRS em paciente idoso", "SIADH secundária a meningite bacteriana", "Doença de Addison autoimune (insuficiência adrenal primária)"],
+            explicacao: "Secreção Ectópica Inapropriada de ADH (SIADH) por células tumorais neuroendócrinas (oat cell). Causa retenção patológica de água livre com hiponatremia euvolêmica hipotônica, urina inadequadamente concentrada e natriurese preservada."
+        },
+        {
+            id: 12,
+            nome: "Guilherme Santos, 8 anos",
+            apresentacao: "Criança internada com febre alta, rigidez de nuca e cefaleia, desenvolvendo convulsão por hiponatremia.",
+            perguntas: {
+                historia: "Quadro infeccioso com febre, irritabilidade e dor no pescoço há 2 dias.",
+                revisao: "Sem perdas gastrointestinais.",
+                habitos: "Sem uso prévio de medicações.",
+                exame_fisico: "Sinais meníngeos positivos (Kernig e Brudzinski presentes). Euvolêmico."
+            },
+            labsEspecificos: {
+                sodio: { nome: "Sódio Sérico (Na+)", res: "122 mEq/L (Hiponatremia Aguda Sintomática)", ref: "135 a 145 mEq/L", alt: true },
+                osmolalidade_u: { nome: "Osmolalidade Urinária", res: "480 mOsm/kg (Inapropriadamente alta)", ref: "< 100 mOsm/kg", alt: true }
+            },
+            correto: "SIADH secundária a meningite bacteriana",
+            diferenciais: ["SIADH paraneoplásica por carcinoma de pequenas células de pulmão", "SIADH induzida por ISRS em paciente idoso", "Diabetes insípida central idiopática/autoimune em criança"],
+            explicacao: "A inflamação meníngea estimula de forma descontrolada as vias hipotalâmicas produtoras de ADH, levando à retenção hídrica com hiponatremia hipotônica em contexto infeccioso agudo do SNC."
+        },
+        {
+            id: 13,
+            nome: "Marta Silveira, 37 anos",
+            apresentacao: "Mulher com esquizofrenia e hábito de beber até 15 litros de água da torneira por dia para 'limpar toxinas'.",
+            perguntas: {
+                historia: "Bebo água o dia todo porque vozes dizem que preciso desintoxicar meu corpo.",
+                revisao: "Urina muitas vezes, proporcionalmente ao que bebe.",
+                habitos: "Histórico psiquiátrico de longa data.",
+                exame_fisico: "Bom estado geral, euvolêmica, sem sinais de desidratação."
+            },
+            labsEspecificos: {
+                sodio: { nome: "Sódio Sérico", res: "131 mEq/L (Tendência à Hiponatremia)", ref: "135 a 145 mEq/L", alt: true },
+                osmolalidade_u: { nome: "Teste de Privação Hídrica (Osmolalidade Urinária)", res: "Aumenta espontaneamente para 780 mOsm/kg após restrição hídrica sem necessidade de dDAVP.", ref: "Concentração normal", alt: false }
+            },
+            correto: "Polidipsia psicogênica mimetizando diabetes insípida",
+            diferenciais: ["Diabetes insípida central pós-traumatismo cranioencefálico", "Diabetes insípida nefrogênica por uso crônico de lítio", "Diabetes insípida central idiopática/autoimune em criança"],
+            explicacao: "A ingestão compulsiva primária de água suprime fisiologicamente a liberação de ADH pelos osmorreceptores. O teste de privação hídrica comprova que o eixo neuro-hipofisário e os túbulos coletores são capazes de concentrar a urina normalmente assim que a sobrecarga hídrica cessa."
+        },
+        {
+            id: 14,
+            nome: "Helena Castro, 31 anos",
+            apresentacao: "Gestante de 32 semanas de gestação gemelar desenvolvendo poliúria e polidipsia graves.",
+            perguntas: {
+                historia: "De repente, no terceiro trimestre, comecei a sentir uma sede insaciável.",
+                revisao: "Glicemia de gestante e curvas glicêmicas normais.",
+                habitos: "Gestação gemelar.",
+                exame_fisico: "Útero gravídico para gêmeos; mucosas secas."
+            },
+            labsEspecificos: {
+                adh: { nome: "Resposta ao dDAVP", res: "A desmopressina reverteu totalmente a poliúria (aumentou a osmolalidade urinária de 110 para 590 mOsm/kg).", ref: "Sensível ao dDAVP", alt: true },
+                sodio: { nome: "Sódio Plasmático", res: "146 mEq/L (Hipernatremia relativa na gravidez)", ref: "130-140 mEq/L", alt: true }
+            },
+            correto: "Diabetes insípida gestacional (excesso de vasopressinase placentária)",
+            diferenciais: ["Diabetes insípida central pós-traumatismo cranioencefálico", "Diabetes gestacional diagnosticada no segundo trimestre", "Polidipsia psicogênica mimetizando diabetes insípida"],
+            explicacao: "A placenta produz aminopeptidase (vasopressinase), que degrada rapidamente o ADH endógeno na circulação. Como o dDAVP sintético tem estrutura molecular resistente à quebra por essa enzima, o quadro reverte instantaneamente com desmopressina."
+        },
+        {
+            id: 15,
+            nome: "Leonor Bastos, 79 anos",
+            apresentacao: "Idosa em tratamento para depressão iniciando sonolência, instabilidade de marcha e quedas da própria altura.",
+            perguntas: {
+                historia: "Filha relata confusão e marcha instável 2 semanas após iniciar antidepressivo.",
+                revisao: "Sem diarreia ou diuréticos.",
+                habitos: "Iniciou Sertralina (ISRS) 50 mg há 15 dias.",
+                exame_fisico: "Euvolêmica, sem turgor diminuído, sem estase jugular ou edema periférico."
+            },
+            labsEspecificos: {
+                sodio: { nome: "Sódio Sérico (Na+)", res: "123 mEq/L (Hiponatremia Euvolêmica Hipotônica)", ref: "135 a 145 mEq/L", alt: true },
+                osmolalidade_u: { nome: "Osmolalidade Urinária", res: "410 mOsm/kg", ref: "< 100 em hiponatremia", alt: true },
+                sodio_u: { nome: "Sódio Urinário", res: "52 mEq/L", ref: "< 20 mEq/L", alt: true }
+            },
+            correto: "SIADH induzida por ISRS em paciente idoso",
+            diferenciais: ["SIADH paraneoplásica por carcinoma de pequenas células de pulmão", "SIADH secundária a meningite bacteriana", "Coma mixedematoso em idoso com hipotireoidismo não tratado"],
+            explicacao: "Os inibidores seletivos de recaptação da serotonina (ISRS) estimulam a liberação central de ADH e aumentam a sensibilidade renal ao hormônio, sendo causa frequente de SIADH farmacológica em idosos."
+        },
+        {
+            id: 16,
+            nome: "Enzo Gabriel, 6 anos",
+            apresentacao: "Menino que passou a apresentar enurese noturna secundária com sede extrema e diurese profusa sem histórico de trauma.",
+            perguntas: {
+                historia: "Ele já dormia sem fralda há 3 anos e agora molha a cama 3 vezes por noite e acorda chorando para beber água.",
+                revisao: "Criança ativa, sem cefaleia ou vômitos matinais.",
+                habitos: "Sem medicações ou acidentes.",
+                exame_fisico: "Pele discretamente desidratada; sem déficits focais."
+            },
+            labsEspecificos: {
+                adh: { nome: "Resposta ao Teste com dDAVP", res: "Normalização imediata da densidade e osmolalidade urinárias (de 100 para 680 mOsm/kg).", ref: "Sensível ao dDAVP", alt: true },
+                rm_sela: { nome: "RM Hipofisária", res: "Espessamento da haste hipofisária com perda do hipersinal de T1 da neuroipófise (Infundíbulo-neuroipofisite autoimune).", ref: "Normal", alt: true }
+            },
+            correto: "Diabetes insípida central idiopática/autoimune em criança",
+            diferenciais: ["Diabetes insípida central pós-traumatismo cranioencefálico", "Diabetes mellitus tipo 1 recém-diagnosticado em cetoacidose", "Deficiência de GH na infância com baixa estatura proporcional"],
+            explicacao: "Infundíbulo-neuroipofisite linfocítica/autoimune com produção de autoanticorpos contra neurônios magnocelulares hipotalâmicos, causando deficiência primária de síntese de vasopressina sem etiologia traumática ou cirúrgica."
+        },
+        {
+            id: 17,
+            nome: "Rogério Prado, 45 anos",
+            apresentacao: "Homem com crescimento de extremidades, mandíbula proeminente (prognatismo), sudorese fétida e macroglossia.",
+            perguntas: {
+                historia: "Tive que trocar todos os meus anéis e o número do sapato subiu de 40 para 44.",
+                revisao: "Ronco intenso com apneia do sono e dores articulares difusas.",
+                habitos: "Sem uso de substâncias anabolizantes.",
+                exame_fisico: "Prognatismo mandibular, arcada dentária alargada, pés e mãos alargados."
+            },
+            labsEspecificos: {
+                igf1: { nome: "IGF-1 Sérico", res: "890 ng/mL (Excessivamente Alto)", ref: "100 a 290 ng/mL", alt: true },
+                gh: { nome: "TOTG para GH (Supressão com 75g glicose)", res: "Nadir do GH: 9.8 ng/mL (Ausência completa de supressão)", ref: "Nadir normal: < 0.4 ng/mL", alt: true },
+                glicemia: { nome: "Glicemia de Jejum", res: "126 mg/dL (Intolerância glicídica / Diabetes)", ref: "70 a 99 mg/dL", alt: true },
+                rm_sela: { nome: "RM de Sela Túrcica", res: "Macroadenoma hipofisário somatotrófico de 22 mm.", ref: "Normal", alt: true }
+            },
+            correto: "Acromegalia por macroadenoma hipofisário secretor de GH",
+            diferenciais: ["Acromegalia por tumor ectópico secretor de GHRH (carcinoide pulmonar)", "Uso abusivo de GH exógeno por atleta", "Gigantismo hipofisário em adolescente pré-fusão epifisária"],
+            explicacao: "Macroadenoma hipofisário em paciente adulto após o fechamento das cartilagens epifisárias. A glicose não suprime a secreção tumoral autônoma de GH no TOTG, o que gera hiperprodução hepática crônica de IGF-1 e crescimento de tecidos acrais moles e ósseos."
+        },
+        {
+            id: 18,
+            nome: "Thiago Brandão, 15 anos",
+            apresentacao: "Adolescente com velocidade de crescimento descomunal, medindo 2,12 metros de altura antes da consolidação das epífises ósseas.",
+            perguntas: {
+                historia: "Cresci mais de 18 cm no último ano, sinto muita dor nos joelhos e cansaço.",
+                revisao: "Dores de cabeça matinais frequentes.",
+                habitos: "Pais com estaturas médias (Pai: 1,75 m, Mãe: 1,63 m).",
+                exame_fisico: "Estatura extrema com proporções corporais eunucóides e mãos gigantescas; genitália compatível com Tanner 2."
+            },
+            labsEspecificos: {
+                igf1: { nome: "IGF-1 Sérico", res: "1.250 ng/mL (Extremamente Alto)", ref: "220 a 500 ng/mL", alt: true },
+                gh: { nome: "GH Basal", res: "45 ng/mL (Hipersecreção maciça)", ref: "< 5 ng/mL", alt: true },
+                rm_sela: { nome: "RM de Sela Túrcica", res: "Adenoma hipofisário somatotrófico volumoso.", ref: "Normal", alt: true }
+            },
+            correto: "Gigantismo hipofisário em adolescente pré-fusão epifisária",
+            diferenciais: ["Acromegalia por macroadenoma hipofisário secretor de GH", "Síndrome de Laron (resistência ao GH/deficiência de IGF-1)", "Uso abusivo de GH exógeno por atleta"],
+            explicacao: "A hipersecreção de GH antes do fechamento das fises ósseas de crescimento linear promove crescimento acelerado dos ossos longos estimulado pelo complexo ternário GH-IGF1, caracterizando Gigantismo."
+        },
+        {
+            id: 19,
+            nome: "Pedrinho Rocha, 7 anos",
+            apresentacao: "Menino com velocidade de crescimento abaixo de 3 cm/ano, baixa estatura grave proporcional, face de aspecto infantil e adiposidade troncular.",
+            perguntas: {
+                historia: "Pais relatam que ele é o menor aluno da escola inteira e usa roupas para crianças de 3 anos.",
+                revisao: "Sem queixas orgânicas sistêmicas.",
+                habitos: "Nascido a termo sem intercorrências.",
+                exame_fisico: "Estatura muito abaixo do percentil 3 (escore Z -3.8), proporções corporais normais, fronte olímpica proeminente."
+            },
+            labsEspecificos: {
+                igf1: { nome: "IGF-1 Sérico", res: "18 ng/mL (Muito baixo)", ref: "70 a 250 ng/mL", alt: true },
+                gh: { nome: "Pico de GH sob Estímulo (Clonidina/Insulina)", res: "Pico máximo de GH: 2.1 ng/mL (Deficiente)", ref: "Pico normal: > 7.0 ng/mL", alt: true },
+                rm_sela: { nome: "RM de Sela Túrcica", res: "Hipoplasia congênita da adenoipófise.", ref: "Normal", alt: true }
+            },
+            correto: "Deficiência de GH na infância com baixa estatura proporcional",
+            diferenciais: ["Síndrome de Laron (resistência ao GH/deficiência de IGF-1)", "Hipotireoidismo congênito detectado no teste do pezinho", "Gigantismo hipofisário em adolescente pré-fusão epifisária"],
+            explicacao: "Deficiência clássica de GH na infância decorrente de hipoplasia somatotrófica. O pico de GH é insuficiente frente a agentes secretagogos, e o tratamento com reposição de r-hGH restaura a velocidade de crescimento linear."
+        },
+        {
+            id: 20,
+            nome: "Marcelo Dantas, 48 anos",
+            apresentacao: "Homem submetido à cirurgia transesfenoidal para ressecção de macroadenoma hipofisário com fadiga crônica, perda de massa magra e aumento de gordura abdominal.",
+            perguntas: {
+                historia: "Depois da cirurgia há 2 anos, perdi a força física, vivo sem energia e minha barriga dobrou de tamanho.",
+                revisao: "Sem dores de cabeça ou alterações visuais.",
+                habitos: "Já repõe levotiroxina e hidrocortisona regularmente com dosagens estáveis.",
+                exame_fisico: "Diminuição importante de massa muscular nos membros e adiposidade visceral."
+            },
+            labsEspecificos: {
+                igf1: { nome: "IGF-1 Sérico", res: "55 ng/mL (Abaixo do esperado para a idade)", ref: "115 a 260 ng/mL", alt: true },
+                gh: { nome: "Pico de GH no Teste de Tolerância à Insulina (ITT)", res: "Pico de GH: 0.3 ng/mL durante hipoglicemia severa", ref: "Pico normal: > 3.0 ng/mL", alt: true },
+                lipides: { nome: "Perfil Lipídico", res: "LDL: 185 mg/dL | Triglicerídeos: 240 mg/dL", ref: "Desejável", alt: true }
+            },
+            correto: "Deficiência de GH do adulto após cirurgia hipofisária",
+            diferenciais: ["Panhipopituitarismo com deficiência de GH após apoplexia hipofisária", "Insuficiência adrenal secundária por suspensão abrupta de corticoide crônico", "Uso abusivo de GH exógeno por atleta"],
+            explicacao: "Deficiência adquirida de GH do adulto secundária a dano cirúrgico somatotrófico. Clinicamente manifesta-se por alteração da composição corporal (perda muscular, ganho lipídico visceral, osteopenia e dislipidemia)."
+        },
+        {
+            id: 21,
+            nome: "Kaline Souza, 9 anos",
+            apresentacao: "Menina com baixa estatura grave e fácies de 'boneca', porém apresentando dosagem de GH basal e sob estímulo muito elevada.",
+            perguntas: {
+                historia: "Ela não cresce quase nada, mas os médicos disseram que o hormônio do crescimento no sangue dela está nas alturas.",
+                revisao: "Voz aguda, mãos e pés muito pequenos, raiz nasal deprimida.",
+                habitos: "Consanguinidade dos pais (primos de primeiro grau).",
+                exame_fisico: "Baixa estatura extrema (escore Z -4.2), hipoplasia da parte média da face."
+            },
+            labsEspecificos: {
+                igf1: { nome: "IGF-1 Plasmático & Teste de Geração", res: "IGF-1: < 10 ng/mL | Não eleva após injeção exógena de GH", ref: "90 a 300 ng/mL", alt: true },
+                gh: { nome: "GH Basal", res: "38 ng/mL (Excessivamente Alto)", ref: "< 3.0 ng/mL", alt: true }
+            },
+            correto: "Síndrome de Laron (resistência ao GH/deficiência de IGF-1)",
+            diferenciais: ["Deficiência de GH na infância com baixa estatura proporcional", "Hipotireoidismo congênito detectado no teste do pezinho", "Acromegalia por tumor ectópico secretor de GHRH (carcinoide pulmonar)"],
+            explicacao: "Mutação no gene do receptor de GH (GHR) impedindo a sinalização intracelular (via JAK2-STAT5) e síntese de IGF-1 no fígado. Caracteriza-se por GH periférico elevado sem capacidade de resposta biológica e sem resposta ao teste de geração de IGF-1."
+        },
+        {
+            id: 22,
+            nome: "Jorge Antunes, 58 anos",
+            apresentacao: "Homem com quadro exuberante de acromegalia, mas com ressonância de sela túrcica mostrando apenas discreta hiperplasia somatotrófica homogênea.",
+            perguntas: {
+                historia: "Meus pés cresceram e minha fisionomia mudou nos últimos anos. Já fiz RM da cabeça e não acharam tumor na hipófise.",
+                revisao: "Tosse crônica seca e rubor facial episódico (flushing).",
+                habitos: "Fumante eventual.",
+                exame_fisico: "Sinais acromegálicos típicos e sibilos esparsos na base pulmonar direita."
+            },
+            labsEspecificos: {
+                igf1: { nome: "IGF-1 Sérico", res: "740 ng/mL (Elevado)", ref: "90 a 250 ng/mL", alt: true },
+                gh: { nome: "GHRH Plasmático & GH Basal", res: "GHRH: 680 pg/mL (Maciço) | GH: 14 ng/mL", ref: "GHRH: < 30 pg/mL", alt: true },
+                tc_abdome: { nome: "TC de Tórax", res: "Nódulo brônquico solitário hipervascularizado no lobo inferior direito (Tumor neuroendócrino/carcinoide).", ref: "Normal", alt: true }
+            },
+            correto: "Acromegalia por tumor ectópico secretor de GHRH (carcinoide pulmonar)",
+            diferenciais: ["Acromegalia por macroadenoma hipofisário secretor de GH", "Uso abusivo de GH exógeno por atleta", "Glucagonoma com eritema necrolítico migratório"],
+            explicacao: "Acromegalia secundária à produção ectópica de GHRH por tumor neuroendócrino pulmonar. O GHRH tumoral estimula tonicamente os somatotrofos da adenoipófise normal a proliferarem e secretarem GH e IGF-1 em excesso."
+        },
+        {
+            id: 23,
+            nome: "Felipe Barreto, 29 anos",
+            apresentacao: "Praticante de musculação hipertrofiado com parestesias bilaterais nas mãos, sudorese, hiperglicemia e níveis de GH que oscilam abruptamente.",
+            perguntas: {
+                historia: "Quero tratar uma dor nos punhos e essa suadeira excessiva; treino pesado há 8 anos.",
+                revisao: "Dores articulares difusas.",
+                habitos: "Confessa uso de r-hGH recombinante (Norditropin) 8 UI/dia associado a esteroides.",
+                exame_fisico: "Massa muscular hipertrófica extrema com baixo percentual de gordura corporal, sem prognatismo mandibular ósseo."
+            },
+            labsEspecificos: {
+                igf1: { nome: "IGF-1 Sérico", res: "680 ng/mL (Suprafisiológico)", ref: "115 a 300 ng/mL", alt: true },
+                gh: { nome: "GH em Amostras Aleatórias", res: "Picos suprafisiológicos erráticos pós-aplicação subcutânea", ref: "Pulsátil baixo", alt: true },
+                glicemia: { nome: "Glicemia de Jejum & HbA1c", res: "Glicemia: 142 mg/dL | HbA1c: 6.8%", ref: "Glic: 70-99", alt: true }
+            },
+            correto: "Uso abusivo de GH exógeno por atleta",
+            diferenciais: ["Acromegalia por macroadenoma hipofisário secretor de GH", "Acromegalia por tumor ectópico secretor de GHRH (carcinoide pulmonar)", "Diabetes mellitus tipo 2 com resistência insulínica e síndrome metabólica"],
+            explicacao: "Uso exógeno ilícito de GH para fins anabólicos. O excesso periférico eleva o IGF-1 e gera intolerância severa à glicose pelo antagonismo ao GLUT-4 e estímulo à gliconeogênese, com neuroimagem hipofisária normal."
+        },
+        {
+            id: 24,
+            nome: "Renato Meira, 52 anos",
+            apresentacao: "Paciente que apresentou cefaleia súbita de forte intensidade seguida de colapso circulatório, perda visual e pan-hipopituitarismo agudo.",
+            perguntas: {
+                historia: "Tive uma dor de cabeça catastrófica como um raio há 1 mês, desmaiei no pronto-socorro e perdi a visão.",
+                revisao: "Astenia profunda, prostração, perda completa de pelos e frio constante.",
+                habitos: "Histórico de adenoma hipofisário não funcionante não tratado.",
+                exame_fisico: "Hipotensão postural grave (PA 75x40 mmHg), palidez acentuada e perda visual bilateral extensa."
+            },
+            labsEspecificos: {
+                gh: { nome: "GH & IGF-1", res: "GH: < 0.05 ng/mL | IGF-1: 15 ng/mL", ref: "Normal", alt: true },
+                acth: { nome: "ACTH & Cortisol", res: "ACTH: < 5 pg/mL | Cortisol: 1.1 μg/dL", ref: "Normal", alt: true },
+                sodio: { nome: "Sódio Sérico", res: "125 mEq/L (Hiponatremia)", ref: "135 a 145 mEq/L", alt: true },
+                rm_sela: { nome: "RM de Crânio", res: "Sinal clássico de apoplexia hipofisária com hematoma intralesional na sela túrcica e necrose tumoral extensa.", ref: "Normal", alt: true }
+            },
+            correto: "Panhipopituitarismo com deficiência de GH após apoplexia hipofisária",
+            diferenciais: ["Deficiência de GH do adulto após cirurgia hipofisária", "Hipoprolactinemia por síndrome de Sheehan (necrose hipofisária pós-parto)", "Macroprolactinoma com efeito de massa"],
+            explicacao: "Apoplexia hipofisária decorrente de infarto isquêmico ou hemorrágico agudo dentro de um adenoma prévio, destruindo rapidamente o tecido adenoipofisário sadio e culminando em falência múltipla aguda de todos os eixos glandulares."
+        },
+        {
+            id: 25,
+            nome: "Matheus Ramos, 13 anos",
+            apresentacao: "Menino trazido em coma superficial com respiração profunda de Kussmaul, desidratação e hálito cetônico.",
+            perguntas: {
+                historia: "Pais contam que ele perdeu 5 kg em duas semanas, bebia jarros de água e começou a vomitar hoje.",
+                revisao: "Dor abdominal difusa simulando abdômen agudo cirúrgico.",
+                habitos: "Sem comorbidades prévias.",
+                exame_fisico: "Mucosas ressecadas, hálito com cheiro doce/frutado, respiração rápida e forçada."
+            },
+            labsEspecificos: {
+                peptideo_c: { nome: "Peptídeo C Sérico", res: "< 0.1 ng/mL (Indetectável)", ref: "1.1 a 4.4 ng/mL", alt: true },
+                anti_gad: { nome: "Anti-GAD65", res: "68 U/mL (Fortemente Reagente)", ref: "< 5 U/mL", alt: true },
+                glicemia: { nome: "Glicemia de Jejum", res: "460 mg/dL (Hiperglicemia Crítica)", ref: "70 a 99 mg/dL", alt: true },
+                cetonas: { nome: "Cetonas Plasmáticas & Cetonúria", res: "Cetonemia: 6.2 mmol/L | Cetonúria: 4+", ref: "< 0.6 mmol/L", alt: true },
+                gasometria: { nome: "Gasometria Arterial", res: "pH: 7.12 | Bicarbonato: 8 mEq/L (Acidose Metabólica Grave)", ref: "pH: 7.35-7.45", alt: true }
+            },
+            correto: "Diabetes mellitus tipo 1 recém-diagnosticado em cetoacidose",
+            diferenciais: ["Diabetes mellitus tipo 2 com resistência insulínica e síndrome metabólica", "Diabetes secundária a pancreatite crônica (tipo 3c)", "Diabetes MODY em adolescente com forte história familiar"],
+            explicacao: "Destruição autoimune insidiosa mediada por autoanticorpos (anti-GAD) das células beta das ilhotas de Langerhans, gerando ausência absoluta de insulina (peptídeo C nulo), lipólise exacerbada e cetoacidose metabólica clássica."
+        },
+        {
+            id: 26,
+            nome: "Geraldo Nogueira, 54 anos",
+            apresentacao: "Homem sedentário, circunferência abdominal 112 cm, com acantose nigricans no pescoço e glicemia elevada em exame periódico.",
+            perguntas: {
+                historia: "Fiz exames da empresa e o médico do trabalho disse que meu açúcar está alto.",
+                revisao: "Sonolência intensa após almoçar e poliúria noturna discreta.",
+                habitos: "Dieta rica em carboidratos refinados e gorduras.",
+                exame_fisico: "Obesidade centrípeta / visceral, dobras cervicais hiperpigmentadas e aveludadas."
+            },
+            labsEspecificos: {
+                insulina: { nome: "Insulina Basal", res: "34 μUI/mL (Hiperinsulinemia)", ref: "2 a 20 μUI/mL", alt: true },
+                peptideo_c: { nome: "Peptídeo C Sérico", res: "4.8 ng/mL (Elevado)", ref: "1.1 a 4.4 ng/mL", alt: true },
+                glicemia: { nome: "Glicemia de Jejum & HbA1c", res: "Glicemia: 172 mg/dL | HbA1c: 8.9%", ref: "Glic: 70-99 | HbA1c: <5.7%", alt: true },
+                lipides: { nome: "Perfil Lipídico", res: "Triglicerídeos: 310 mg/dL | HDL: 31 mg/dL", ref: "Desejável", alt: true }
+            },
+            correto: "Diabetes mellitus tipo 2 com resistência insulínica e síndrome metabólica",
+            diferenciais: ["Diabetes mellitus tipo 1 recém-diagnosticado em cetoacidose", "Diabetes MODY em adolescente com forte história familiar", "Síndrome de Cushing (adenoma hipofisário produtor de ACTH)"],
+            explicacao: "Resistência periférica à insulina associada a lipotoxicidade por adiposidade visceral, com defeito pós-receptor (redução de translocação do GLUT-4) e secreção pancreática compensatória com hiperinsulinemia relativa."
+        },
+        {
+            id: 27,
+            nome: "Camila Guimarães, 17 anos",
+            apresentacao: "Adolescente magra com hiperglicemia leve assintomática, sem obesidade ou acantose, com mãe e avó diabéticas desde a juventude.",
+            perguntas: {
+                historia: "Minha mãe e minha avó tiveram diagnóstico de diabetes com menos de 25 anos sem precisar de insulina. Agora meu exame deu alterado.",
+                revisao: "Nunca tive cetoacidose e sinto-me 100% bem.",
+                habitos: "Pratica esportes regularmente, IMC: 20 kg/m².",
+                exame_fisico: "Totalmente normolínea, sem estigmas de resistência insulínica."
+            },
+            labsEspecificos: {
+                anti_gad: { nome: "Autoanticorpos do Diabetes (Anti-GAD/IA2)", res: "Negativos (Exclui etiologia autoimune DM1)", ref: "Negativos", alt: false },
+                peptideo_c: { nome: "Peptídeo C Sérico", res: "1.8 ng/mL (Produção endógena normal de insulina preservada)", ref: "1.1 a 4.4 ng/mL", alt: false },
+                glicemia: { nome: "Glicemia de Jejum & HbA1c", res: "Glicemia: 135 mg/dL | HbA1c: 6.7%", ref: "Glic: 70-99 | HbA1c: <5.7%", alt: true }
+            },
+            correto: "Diabetes MODY em adolescente com forte história familiar",
+            diferenciais: ["Diabetes mellitus tipo 1 recém-diagnosticado em cetoacidose", "Diabetes mellitus tipo 2 com resistência insulínica e síndrome metabólica", "Diabetes gestacional diagnosticada no segundo trimestre"],
+            explicacao: "Maturity-Onset Diabetes of the Young (MODY), forma monogênica de herança autossômica dominante caracterizada por defeito primário na secreção de insulina por mutação em fatores de transcrição (HNF1A/Glicoquinase), sem autoimunidade e sem obesidade."
+        },
+        {
+            id: 28,
+            nome: "Eduardo Linhares, 39 anos",
+            apresentacao: "Homem com episódios repetidos de tremores, sudorese, confusão mental e desmaios em jejum que cessam instantaneamente ao comer açúcar.",
+            perguntas: {
+                historia: "Acordo de manhã tonto, suando frio e falando coisas sem nexo. Se eu tomar um copo de refrigerante com açúcar, fico novo em minutos.",
+                revisao: "Ganho de peso de 9 kg no último ano porque passa o dia comendo para evitar as crises.",
+                habitos: "Nega uso de hipoglicemiantes.",
+                exame_fisico: "Confuso durante episódio de glicemia capilar de 38 mg/dL; reversão completa pós-glicose (Tríade de Whipple)."
+            },
+            labsEspecificos: {
+                glicemia: { nome: "Glicemia em Crise", res: "35 mg/dL (Hipoglicemia Severa)", ref: "70 a 99 mg/dL", alt: true },
+                insulina: { nome: "Insulina Sérica em Hipoglicemia (< 55 mg/dL)", res: "28 μUI/mL (Inapropriadamente Alta)", ref: "< 3 μUI/mL", alt: true },
+                peptideo_c: { nome: "Peptídeo C em Hipoglicemia", res: "3.9 ng/mL (Elevado / Endógeno)", ref: "< 0.2 ng/mL", alt: true },
+                tc_abdome: { nome: "TC / RM de Abdômen", res: "Nódulo hipervascularizado solitário de 1,4 cm no corpo do pâncreas compatível com tumor de células beta.", ref: "Normal", alt: true }
+            },
+            correto: "Insulinoma com hipoglicemias hiperinsulinêmicas recorrentes",
+            diferenciais: ["Hipoglicemia factícia por uso sub-reptício de insulina", "Somatostatinoma com esteatorreia e colelitíase", "Insuficiência adrenal primária (Doença de Addison)"],
+            explicacao: "Tumor neuroendócrino das células beta pancreáticas com hipersecreção autônoma de insulina não suprimida pela hipoglicemia severa. O peptídeo C concomitante elevado prova que a insulina é endógena (ao contrário da hipoglicemia factícia por injeção)."
+        },
+        {
+            id: 29,
+            nome: "Arnaldo Silveira, 62 anos",
+            apresentacao: "Homem com perda de peso grave, diabetes de início recente e lesões dermatológicas avermelhadas descamativas com bolhas que migram pelo corpo.",
+            perguntas: {
+                historia: "Minha pele começou a queimar e descascar na virilha e nas pernas há meses, formando crostas que mudam de lugar.",
+                revisao: "Perda de 12 kg, diarreia aquosa e língua lisa avermelhada e dolorosa (glossite).",
+                habitos: "Nenhum histórico medicamentoso específico.",
+                exame_fisico: "Placas eritematosas circulares com necrose central e bordas crostosas (Eritema Necrolítico Migratório)."
+            },
+            labsEspecificos: {
+                glucagon: { nome: "Glucagon Plasmático em Jejum", res: "1.450 pg/mL (Maciçamente Elevado)", ref: "50 a 150 pg/mL", alt: true },
+                glicemia: { nome: "Glicemia de Jejum", res: "188 mg/dL (Diabetes Secundária)", ref: "70 a 99 mg/dL", alt: true },
+                tc_abdome: { nome: "TC com Contraste de Abdômen", res: "Grande massa tumoral na cauda do pâncreas com metástases hepáticas hipervasculares.", ref: "Normal", alt: true }
+            },
+            correto: "Glucagonoma com eritema necrolítico migratório",
+            diferenciais: ["Diabetes mellitus tipo 2 com resistência insulínica e síndrome metabólica", "Somatostatinoma com esteatorreia e colelitíase", "Doença de Graves com oftalmopatia"],
+            explicacao: "Tumor neuroendócrino das células alfa do pâncreas com hipersecreção crônica de glucagon. Cursa com a síndrome dos '4 Ds': Dermatose (eritema necrolítico migratório), Diabetes secundária, Depressão/Diarreia e Trombose Venosa Profunda."
+        },
+        {
+            id: 30,
+            nome: "José Roberto, 53 anos",
+            apresentacao: "Homem etilista crônico com dores abdominais epigástricas em faixa, esteatorreia (fezes gordurosas) e perda de controle glicêmico com frequentes hipoglicemias.",
+            perguntas: {
+                historia: "Tive várias internações por pancreatite por bebida alcoólica; agora minhas fezes boiam e cheiram muito forte.",
+                revisao: "Emagrecimento acentuado por má-absorção.",
+                habitos: "Etilismo de destilados por mais de 25 anos.",
+                exame_fisico: "Emagrecido, abdômen doloroso à palpação profunda em epigástrio."
+            },
+            labsEspecificos: {
+                peptideo_c: { nome: "Peptídeo C & Glucagon", res: "Peptídeo C: 0.3 ng/mL | Glucagon: 20 pg/mL (Destruição mista de células beta e alfa)", ref: "Normais", alt: true },
+                glicemia: { nome: "Glicemia de Jejum", res: "220 mg/dL com extrema instabilidade ('brittle diabetes')", ref: "70 a 99 mg/dL", alt: true },
+                tc_abdome: { nome: "TC de Abdômen", res: "Atrofia difusa do parênquima pancreático com calcificações grosseiras e dilatação do ducto de Wirsung.", ref: "Normal", alt: true }
+            },
+            correto: "Diabetes secundária a pancreatite crônica (tipo 3c)",
+            diferenciais: ["Diabetes mellitus tipo 1 recém-diagnosticado em cetoacidose", "Diabetes mellitus tipo 2 com resistência insulínica e síndrome metabólica", "Somatostatinoma com esteatorreia e colelitíase"],
+            explicacao: "Diabetes pancreatogênico ou Tipo 3c decorrente da destruição fibrótica inflamatória de toda a glândula (exócrina e endócrina). Como há destruição concomitante de células beta (insulina) e alfa (glucagon), o paciente sofre tanto de hiperglicemia quanto de hipoglicemias desastrosas por ausência do contrarregulador glucagon."
+        },
+        {
+            id: 31,
+            nome: "Carla Mendes, 27 anos",
+            apresentacao: "Técnica de enfermagem trazida desacordada por hipoglicemia severa (glicemia 28 mg/dL) com insulina laboratorial extremamente alta.",
+            perguntas: {
+                historia: "Colegas de trabalho relatam que a encontraram desmaiada no vestiário do hospital.",
+                revisao: "Sem perda de peso prévia.",
+                habitos: "Acesso a fármacos hospitalares.",
+                exame_fisico: "Sudorese profusa, taquicardia; sem massas abdominais palpáveis."
+            },
+            labsEspecificos: {
+                glicemia: { nome: "Glicemia em Crise", res: "28 mg/dL (Hipoglicemia Crítica)", ref: "70 a 99 mg/dL", alt: true },
+                insulina: { nome: "Insulina Sérica", res: "> 300 μUI/mL (Níveis astronômicos exógenos)", ref: "< 3 durante hipoglicemia", alt: true },
+                peptideo_c: { nome: "Peptídeo C Sérico (em crise)", res: "< 0.1 ng/mL (Completamente Suprimido)", ref: "> 1.0 se endógena", alt: true }
+            },
+            correto: "Hipoglicemia factícia por uso sub-reptício de insulina",
+            diferenciais: ["Insulinoma com hipoglicemias hiperinsulinêmicas recorrentes", "Diabetes mellitus tipo 1 recém-diagnosticado em cetoacidose", "Insuficiência adrenal primária (Doença de Addison)"],
+            explicacao: "A injeção de insulina exógena comercial não contém o Peptídeo C (que é clivado no grânulo secretor na síntese biológica). Portanto, o padrão de Insulina astronômica com Peptídeo C suprimido fecha inequivocamente a administração sub-reptícia."
+        },
+        {
+            id: 32,
+            nome: "Mariana Prado, 29 anos",
+            apresentacao: "Gestante de 26 semanas, sem histórico prévio de hiperglicemia, apresentando alteração no TOTG de rastreio de rotina pré-natal.",
+            perguntas: {
+                historia: "Estou no 6º mês de gravidez e meu médico pediu o teste do líquido doce que deu alterado.",
+                revisao: "Sem sintomas de descompensação (sem perda de peso ou cetoacidose).",
+                habitos: "Gesta 1, ganho de peso adequado até o momento.",
+                exame_fisico: "Altura uterina compatível com idade gestacional; feto único viável."
+            },
+            labsEspecificos: {
+                glicemia: { nome: "TOTG com 75g de Glicose (24-28 semanas)", res: "Jejum: 98 mg/dL (Alto) | 1 hora: 188 mg/dL (Alto) | 2 horas: 156 mg/dL (Alto)", ref: "Jejum: < 92 | 1h: < 180 | 2h: < 153 mg/dL", alt: true }
+            },
+            correto: "Diabetes gestacional diagnosticada no segundo trimestre",
+            diferenciais: ["Diabetes mellitus tipo 2 com resistência insulínica e síndrome metabólica", "Diabetes mellitus tipo 1 recém-diagnosticado em cetoacidose", "Diabetes insípida gestacional (excesso de vasopressinase placentária)"],
+            explicacao: "Resistência insulínica fisiológica da segunda metade da gestação acentuada pelos hormônios contrarreguladores placentários (Lactogênio Placentário Humano, Progesterona e Cortisol livre materno), superando a capacidade secretória compensatória das células beta."
+        },
+        {
+            id: 33,
+            nome: "Vicente Castelo, 59 anos",
+            apresentacao: "Homem com a tríade clínica de fezes gordurosas e volumosas (esteatorreia), cálculos biliares múltiplos e diabetes mellitus leve.",
+            perguntas: {
+                historia: "Tenho diarreia crônica gordurosa há 1 ano, dor de pedra na vesícula e minha glicose subiu.",
+                revisao: "Sensação de digestão muito lenta e empachamento permanente.",
+                habitos: "Nenhum histórico alcoólico.",
+                exame_fisico: "Leve icterícia, dor à palpação do hipocôndrio direito."
+            },
+            labsEspecificos: {
+                glicemia: { nome: "Glicemia de Jejum", res: "155 mg/dL", ref: "70 a 99 mg/dL", alt: true },
+                insulina: { nome: "Insulina e Glucagon", res: "Ambos acentuadamente suprimidos pela somatostatina tumoral", ref: "Normais", alt: true },
+                tc_abdome: { nome: "TC / RM de Abdômen", res: "Massa tumoral sólida de 3 cm na cabeça do pâncreas e cálculo de colesterol na vesícula biliar.", ref: "Normal", alt: true }
+            },
+            correto: "Somatostatinoma com esteatorreia e colelitíase",
+            diferenciais: ["Glucagonoma com eritema necrolítico migratório", "Diabetes secundária a pancreatite crônica (tipo 3c)", "Insulinoma com hipoglicemias hiperinsulinêmicas recorrentes"],
+            explicacao: "Tumor das células delta (produtoras de somatostatina). A somatostatina é o inibidor universal endócrino: inibe a colecistoquinina (gerando atonia da vesícula biliar e litíase), inibe as enzimas pancreáticas e secreção de bicarbonato (esteatorreia) e inibe a insulina (diabetes)."
+        },
+        {
+            id: 34,
+            nome: "Camila Duarte, 34 anos",
+            apresentacao: "Mulher com protusão ocular evidente (proptose), queixa de calor intolerável, tremores, taquicardia e bócio difuso.",
+            perguntas: {
+                historia: "Sinto meu coração bater acelerado mesmo parada, perdi peso e meus olhos estão arregalados.",
+                revisao: "Intestino solto com evacuações diárias múltiplas e insônia.",
+                habitos: "Não toma emagrecedores ou fórmulas.",
+                exame_fisico: "Bócio difuso com sopro tireoidiano audível; exoftalmia bilateral simétrica e retração palpebral."
+            },
+            labsEspecificos: {
+                tsh: { nome: "TSH", res: "< 0.01 μUI/mL (Suprimido)", ref: "0.4 a 4.0 μUI/mL", alt: true },
+                t4l: { nome: "T4 Livre", res: "4.5 ng/dL (Muito Alto)", ref: "0.8 a 1.8 ng/dL", alt: true },
+                t3: { nome: "T3 Total", res: "380 ng/dL (Elevado)", ref: "80 a 200 ng/dL", alt: true },
+                trab: { nome: "Anticorpo Anti-Receptor de TSH (TRAb)", res: "12.4 UI/L (Fortemente Reagente)", ref: "< 1.75 UI/L", alt: true },
+                us_cervical: { nome: "Cintilografia de Tireoide (Iodo-131)", res: "Captação difusa e homogeneamente aumentada em toda a glândula (Hipercaptação difusa).", ref: "Normal", alt: true }
+            },
+            correto: "Doença de Graves com oftalmopatia",
+            diferenciais: ["Bócio multinodular tóxico em paciente idosa", "Tireoidite subaguda de De Quervain pós-viral", "Tempestade tireoidiana precipitada por infecção"],
+            explicacao: "Doença de Graves: anticorpos estimuladores do receptor de TSH (TRAb) causam hiperplasia e síntese autônoma de T3/T4 com bócio difuso, além de ativarem receptores nos fibroblastos e adipócitos retro-orbitais, produzindo glicosaminoglicanos e oftalmopatia."
+        },
+        {
+            id: 35,
+            nome: "Cláudia Rezende, 38 anos",
+            apresentacao: "Mulher assintomática em check-up laboratorial preventivo apresentando elevação leve e isolada do TSH com T4 livre normal.",
+            perguntas: {
+                historia: "Não sinto absolutamente nada; fiz os exames de sangue por rotina pedida pelo ginecologista.",
+                revisao: "Discreta queixa de unhas um pouco mais frágeis, sem ganho ponderal.",
+                habitos: "Histórico familiar de tireoidite autoimune na irmã.",
+                exame_fisico: "Exame tireoidiano normal, sem nódulos ou bócio perceptível."
+            },
+            labsEspecificos: {
+                tsh: { nome: "TSH", res: "7.2 μUI/mL (Elevado)", ref: "0.4 a 4.0 μUI/mL", alt: true },
+                t4l: { nome: "T4 Livre", res: "1.2 ng/dL (Perfeitamente Normal)", ref: "0.8 a 1.8 ng/dL", alt: false },
+                anti_tpo: { nome: "Anticorpo Anti-Peroxidase (Anti-TPO)", res: "320 UI/mL (Positivo)", ref: "< 35 UI/mL", alt: true }
+            },
+            correto: "Tireoidite de Hashimoto com hipotireoidismo subclínico",
+            diferenciais: ["Doença de Graves com oftalmopatia", "Tireoidite subaguda de De Quervain pós-viral", "Tireoidite pós-parto"],
+            explicacao: "Hipotireoidismo Subclínico: fase inicial da Tireoidite de Hashimoto onde a hipófise eleva o TSH de modo compensatório para forçar a tireoide agredida a manter níveis normais de hormônios livres periféricos (T4 livre normal)."
+        },
+        {
+            id: 36,
+            nome: "Francisca Moreira, 73 anos",
+            apresentacao: "Idosa com fibrilação atrial de início recente, perda de peso e múltiplos nódulos tireoidianos palpáveis sem queixas oculares.",
+            perguntas: {
+                historia: "Sinto o coração descompassado e emagreci 5 kg sem querer.",
+                revisao: "Sem proptose, sem dor no pescoço ou febre.",
+                habitos: "Histórico de bócio volumoso há mais de 30 anos.",
+                exame_fisico: "Tireoide nodular e aumentada com nódulos de consistência elástica palpáveis em ambos os lobos; sem oftalmopatia."
+            },
+            labsEspecificos: {
+                tsh: { nome: "TSH", res: "0.02 μUI/mL (Suprimido)", ref: "0.4 a 4.0 μUI/mL", alt: true },
+                t4l: { nome: "T4 Livre", res: "2.3 ng/dL (Elevado)", ref: "0.8 a 1.8 ng/dL", alt: true },
+                trab: { nome: "Pesquisa de TRAb", res: "< 0.5 UI/L (Negativo)", ref: "< 1.75 UI/L", alt: false },
+                us_cervical: { nome: "Cintilografia de Tireoide", res: "Múltiplas áreas nodulares hipercaptantes autônomas ('nódulos quentes') com supressão do restante do parênquima.", ref: "Normal", alt: true }
+            },
+            correto: "Bócio multinodular tóxico em paciente idosa",
+            diferenciais: ["Doença de Graves com oftalmopatia", "Nódulo tireoidiano com carcinoma papilífero", "Tempestade tireoidiana precipitada por infecção"],
+            explicacao: "Doença de Plummer / Bócio Multinodular Tóxico: mutações somáticas constitutivas nos receptores de TSH em múltiplos folículos geram nódulos com autonomia funcional que produzem T3/T4 independentemente do TSH, mais frequente em idosos e sem oftalmopatia."
+        },
+        {
+            id: 37,
+            nome: "Renata Vasconcelos, 36 anos",
+            apresentacao: "Mulher com dor cervical anterior intensa que irradia para a mandíbula e ouvidos, febrícula e tireotoxicose leve após virose respiratória.",
+            perguntas: {
+                historia: "Tive uma gripe forte há 2 semanas; agora meu pescoço dói tanto que não consigo encostar a mão na garganta.",
+                revisao: "Coração acelerado, dor para engolir (disfagia dolorosa).",
+                habitos: "Nenhum remédio contínuo.",
+                exame_fisico: "Tireoide extremamente dolorosa à palpação superficial, edematosa e aumentada assimetricamente."
+            },
+            labsEspecificos: {
+                tsh: { nome: "TSH", res: "0.05 μUI/mL (Baixo)", ref: "0.4 a 4.0 μUI/mL", alt: true },
+                t4l: { nome: "T4 Livre", res: "2.8 ng/dL (Fase de Liberação Tirotóxica)", ref: "0.8 a 1.8 ng/dL", alt: true },
+                vhs: { nome: "Marcadores Inflamatórios (VHS / PCR)", res: "VHS: 88 mm/1ªh (Extremamente Alto) | PCR: 42 mg/L", ref: "VHS: < 20 mm/h", alt: true },
+                us_cervical: { nome: "Cintilografia Tireoidiana (RAIU)", res: "Captação de iodo praticamente NULA / Branca (Folículos rotos não captam iodo).", ref: "Normal: 15-25%", alt: true }
+            },
+            correto: "Tireoidite subaguda de De Quervain pós-viral",
+            diferenciais: ["Doença de Graves com oftalmopatia", "Tireoidite de Hashimoto com hipotireoidismo subclínico", "Tireoidite pós-parto"],
+            explicacao: "Tireoidite granulomatosa subaguda de De Quervain. A inflamação destrutiva pós-viral rompe folículos tireoidianos, liberando colóide pré-formado para a circulação (tirotoxicose transitória associada a dor cervical severa e VHS muito alto, com cintilografia branca/bloqueada)."
+        },
+        {
+            id: 38,
+            nome: "Lorena Peixoto, 28 anos",
+            apresentacao: "Paciente com histórico de Graves não tratado que chega à UTI com febre de 40.5°C, delírio psicótico, taquicardia extrema (165 bpm) e choque.",
+            perguntas: {
+                historia: "Família informa que ela tinha hipertireoidismo e parou os remédios; teve pneumonia há 3 dias e piorou subitamente.",
+                revisao: "Agitação maníaca evoluindo para obnubilação e icterícia.",
+                habitos: "Abandono de tionamidas.",
+                exame_fisico: "Temperatura 40.5°C, FC 165 bpm, sudorese torrencial, bócio vascularizado palpável e desidratação crítica."
+            },
+            labsEspecificos: {
+                tsh: { nome: "TSH", res: "Indetectável (< 0.01 μUI/mL)", ref: "0.4 a 4.0 μUI/mL", alt: true },
+                t4l: { nome: "T4 Livre", res: "> 6.0 ng/dL (Extremamente Elevado)", ref: "0.8 a 1.8 ng/dL", alt: true }
+            },
+            correto: "Tempestade tireoidiana precipitada por infecção",
+            diferenciais: ["Doença de Graves com oftalmopatia", "Feocromocitoma com crises hipertensivas paroxísticas", "Coma mixedematoso em idoso com hipotireoidismo não tratado"],
+            explicacao: "Crise tireotóxica aguda descompensada (Tempestade Tireoidiana) desencadeada por pneumonia em paciente com hipertireoidismo de base, caracterizada por hipertermia grave, disfunção cardiovascular extrema e alteração aguda do estado mental."
+        },
+        {
+            id: 39,
+            nome: "Recém-Nascido Miguel, 12 dias de vida",
+            apresentacao: "Bebê assintomático encaminhado com urgência pelo programa de triagem neonatal por teste do pezinho alterado.",
+            perguntas: {
+                historia: "A mãe relata que a criança mama bem, mas é muito dorminhoca e demora dias para evacuar.",
+                revisao: "Icterícia fisiológica prolongada.",
+                habitos: "Parto cesáreo a termo, pré-natal sem anormalidades.",
+                exame_fisico: "Hérnia umbilical evidente, fontanela posterior ampla (> 1 cm) e macroglossia discreta."
+            },
+            labsEspecificos: {
+                tsh: { nome: "TSH Neonatal Confirmatório", res: "120 μUI/mL (Maciçamente Elevado)", ref: "< 10 μUI/mL", alt: true },
+                t4l: { nome: "T4 Livre Sérico", res: "0.2 ng/dL (Acentuadamente Baixo)", ref: "0.9 a 2.2 ng/dL em neonatos", alt: true },
+                us_cervical: { nome: "US / Cintilografia Neonatal", res: "Ausência de tecido tireoidiano funcionante no leito cervical (Disgenesia / Agenesia).", ref: "Tópica", alt: true }
+            },
+            correto: "Hipotireoidismo congênito detectado no teste do pezinho",
+            diferenciais: ["Hiperplasia adrenal congênita clássica (deficiência de 21-hidroxilase) em recém-nascido", "Tireoidite de Hashimoto com hipotireoidismo subclínico", "Coma mixedematoso em idoso com hipotireoidismo não tratado"],
+            explicacao: "Disgenesia tireoidiana congênita. O início imediato de levotiroxina antes das primeiras 2 a 4 semanas de vida é mandatório para prevenir danos cerebrais permanentes e retardo neurocognitivo grave (cretinismo)."
+        },
+        {
+            id: 40,
+            nome: "Juliana Peçanha, 33 anos",
+            apresentacao: "Mulher com nódulo palpável único, endurecido e aderido no lobo tireoidiano direito, com linfonodomegalias cervicais ipsilaterais.",
+            perguntas: {
+                historia: "Senti um caroço duro no pescoço ao passar hidratante há 2 meses e ele não para de crescer.",
+                revisao: "Sem palpitações, sem alteração de peso ou sensação de calor/frio.",
+                habitos: "Sem histórico de radiação cervical na infância.",
+                exame_fisico: "Nódulo pétreo de 2,2 cm em lobo direito associado a linfonodo satélite palpável em nível III jugulocarotídeo."
+            },
+            labsEspecificos: {
+                tsh: { nome: "TSH", res: "1.6 μUI/mL (Eutireoidismo)", ref: "0.4 a 4.0 μUI/mL", alt: false },
+                us_cervical: { nome: "Ultrassonografia e PAAF de Tireoide", res: "US: Nódulo sólido hipoecóico, microcalcificações, margens espiculadas (TIRADS 5). PAAF: Bethesda VI (Carcinoma Papilífero).", ref: "Benigno", alt: true }
+            },
+            correto: "Nódulo tireoidiano com carcinoma papilífero",
+            diferenciais: ["Bócio multinodular tóxico em paciente idosa", "Doença de Graves com oftalmopatia", "Tireoidite de Hashimoto com hipotireoidismo subclínico"],
+            explicacao: "Carcinoma papilífero da tireoide: neoplasia maligna diferenciada mais prevalente, caracterizada por nódulo 'frio' à cintilografia e padrões ultrassonográficos suspeitos (microcalcificações e invasão linfonodal regional com função hormonal preservada)."
+        },
+        {
+            id: 41,
+            nome: "Thaís Mendonça, 31 anos",
+            apresentacao: "Puérpera há 4 meses apresentando palpitações e irritabilidade, que após 8 semanas evoluiu espontaneamente para cansaço profundo e ganho de peso.",
+            perguntas: {
+                historia: "Dois meses depois do parto eu vivia suando e nervosa; agora vivo com um sono incontrolável e não consigo perder o peso do parto.",
+                revisao: "Evolução clínica bifásica característica.",
+                habitos: "Parto vaginal eutócico sem hemorragia prévia.",
+                exame_fisico: "Leve aumento indolor da tireoide; sem oftalmopatia."
+            },
+            labsEspecificos: {
+                tsh: { nome: "TSH no 4º Mês Pós-Parto", res: "24.5 μUI/mL (Fase Hipotireoidea)", ref: "0.4 a 4.0 μUI/mL", alt: true },
+                t4l: { nome: "T4 Livre", res: "0.5 ng/dL (Baixo)", ref: "0.8 a 1.8 ng/dL", alt: true },
+                anti_tpo: { nome: "Anticorpo Anti-TPO", res: "410 UI/mL (Positivo)", ref: "< 35 UI/mL", alt: true },
+                trab: { nome: "TRAb", res: "< 0.5 UI/L (Negativo)", ref: "< 1.75 UI/L", alt: false }
+            },
+            correto: "Tireoidite pós-parto",
+            diferenciais: ["Doença de Graves com oftalmopatia", "Hipoprolactinemia por síndrome de Sheehan (necrose hipofisária pós-parto)", "Tireoidite subaguda de De Quervain pós-viral"],
+            explicacao: "Tireoidite linfocítica subaguda indolor do puerpério. Ocorre por 'rebote' imunológico pós-parto em mulheres com autoimunidade tireoidiana latente, cursando com fase tirotóxica de lise folicular seguida de fase hipotireoidea autolimitada."
+        },
+        {
+            id: 42,
+            nome: "Anacleto Dias, 81 anos",
+            apresentacao: "Idoso encontrado torporoso no inverno com hipotermia grave (33.8°C), bradicardia extrema, retenção urinária e mixedema volumoso.",
+            perguntas: {
+                historia: "Vizinhos contam que ele vivia recluso, lento e parou de responder hoje pela manhã.",
+                revisao: "Hipotermia, hipoventilação alveolar e edema generalizado sem cacifo.",
+                habitos: "Tinha receita antiga de levotiroxina que nunca comprou.",
+                exame_fisico: "Bradicardia (FC 38 bpm), PA 80x50 mmHg, temperatura retal 33.8°C, voz inaudível, reflexo patelar com fase de relaxamento abolida."
+            },
+            labsEspecificos: {
+                tsh: { nome: "TSH", res: "94.0 μUI/mL (Extremamente Alto)", ref: "0.4 a 4.0 μUI/mL", alt: true },
+                t4l: { nome: "T4 Livre", res: "< 0.1 ng/dL (Colapso Tireoidiano)", ref: "0.8 a 1.8 ng/dL", alt: true },
+                sodio: { nome: "Sódio Sérico (Na+)", res: "119 mEq/L (Hiponatremia Grave)", ref: "135 a 145 mEq/L", alt: true },
+                gasometria: { nome: "Gasometria Arterial", res: "pCO2: 68 mmHg | pH: 7.22 (Acidose respiratória por hipoventilação alveolar)", ref: "pH: 7.35-7.45", alt: true }
+            },
+            correto: "Coma mixedematoso em idoso com hipotireoidismo não tratado",
+            diferenciais: ["Hipotireoidismo primário (Tireoidite de Hashimoto)", "Crise addisoniana precipitada por estresse cirúrgico", "SIADH induzida por ISRS em paciente idoso"],
+            explicacao: "Coma mixedematoso: emergência endocrinológica máxima por descompensação terminal de hipotireoidismo primário severo de longa data, com falência dos mecanismos de termogênese e colapso respiratório e neurológico."
+        },
+        {
+            id: 43,
+            nome: "Sérgio Meirelles, 38 anos",
+            apresentacao: "Homem com fraqueza crônica, escurecimento da gengiva e dobras cutâneas, hipotensão postural e desejo compulsivo por sal.",
+            perguntas: {
+                historia: "Perdi todas as forças para trabalhar, sinto tonturas toda vez que fico de pé e vivo comendo sal puro.",
+                revisao: "Náuseas, perda de 8 kg e dores abdominais recorrentes.",
+                habitos: "Sem uso de corticoides.",
+                exame_fisico: "Hiperpigmentação em mucosa jugal, leito ungueal e cicatrizes prévias; PA deitado 100x60, em pé 75x45 mmHg."
+            },
+            labsEspecificos: {
+                cortisol_8h: { nome: "Cortisol Sérico Basal (8h)", res: "1.4 μg/dL (Extremamente Baixo)", ref: "5 a 25 μg/dL", alt: true },
+                acth: { nome: "ACTH Plasmático", res: "420 pg/mL (Maciçamente Elevado por perda de feedback)", ref: "10 a 60 pg/mL", alt: true },
+                sodio: { nome: "Sódio Sérico (Na+)", res: "126 mEq/L (Hiponatremia)", ref: "135 a 145 mEq/L", alt: true },
+                potassio: { nome: "Potássio Sérico (K+)", res: "6.2 mEq/L (Hipercalemia)", ref: "3.5 a 5.0 mEq/L", alt: true }
+            },
+            correto: "Doença de Addison autoimune (insuficiência adrenal primária)",
+            diferenciais: ["Insuficiência adrenal secundária por suspensão abrupta de corticoide crônico", "Crise addisoniana precipitada por estresse cirúrgico", "Hiperplasia adrenal congênita clássica (deficiência de 21-hidroxilase) em recém-nascido"],
+            explicacao: "Adrenalite autoimune primária (Doença de Addison). A destruição das 3 zonas do córtex adrenal elimina o cortisol (astenia e hipoglicemia) e a aldosterona (hiponatremia e hipercalemia com perda de sal). A perda de feedback negativo eleva o ACTH/POMC, ativando receptores MC1R nos melanócitos com hiperpigmentação mucocutânea."
+        },
+        {
+            id: 44,
+            nome: "Vânia Sampaio, 44 anos",
+            apresentacao: "Mulher portadora de lúpus que suspendeu por conta própria o uso de prednisona 40 mg/dia após 1 ano contínuo, evoluindo com astenia severa e hipotensão sem hiperpigmentação.",
+            perguntas: {
+                historia: "Tomei corticoide em dose alta por mais de um ano para o rim; decidi parar tudo de um dia para o outro há 5 dias.",
+                revisao: "Prostração intensa, vômitos e tonturas graves.",
+                habitos: "Suspensão abrupta sem desmame do corticoide exógeno.",
+                exame_fisico: "Fácies cushingóide residual, hipotensa (PA 85x50 mmHg), porém sem qualquer mancha ou hiperpigmentação na pele."
+            },
+            labsEspecificos: {
+                cortisol_8h: { nome: "Cortisol Sérico", res: "1.0 μg/dL (Suprimido)", ref: "5 a 25 μg/dL", alt: true },
+                acth: { nome: "ACTH Plasmático", res: "< 5 pg/mL (Completamente Suprimido)", ref: "10 a 60 pg/mL", alt: true },
+                potassio: { nome: "Potássio Sérico (K+)", res: "4.2 mEq/L (Potássio estritamente normal!)", ref: "3.5 a 5.0 mEq/L", alt: false }
+            },
+            correto: "Insuficiência adrenal secundária por suspensão abrupta de corticoide crônico",
+            diferenciais: ["Doença de Addison autoimune (insuficiência adrenal primária)", "Síndrome de Cushing por uso crônico de corticoide exógeno", "Crise addisoniana precipitada por estresse cirúrgico"],
+            explicacao: "Insuficiência Adrenal Secundária por atrofia do eixo HPA induzida por corticoterapia crônica. A suspensão abrupta encontra a hipófise incapaz de secretar ACTH. O potássio permanece perfeitamente normal porque a aldosterona é regulada pelo eixo renina-angiotensina e não pelo ACTH, e a pele não hiperpigmenta (ACTH suprimido)."
+        },
+        {
+            id: 45,
+            nome: "Renata Bezerra, 36 anos",
+            apresentacao: "Mulher com ganho de gordura facial e troncular ('giba'), estrias violáceas largas no abdômen, cefaleia e hipertensão com ACTH elevado.",
+            perguntas: {
+                historia: "Meu rosto ficou redondo, nasceram pelos no meu queixo e minha barriga está cheia de estrias roxas grossas.",
+                revisao: "Fraqueza nas pernas para subir escadas e insônia crônica.",
+                habitos: "Nega uso de pomadas, injeções ou comprimidos de corticoides.",
+                exame_fisico: "Fácies em lua cheia, estrias violáceas com mais de 1 cm de largura no abdômen e flancos."
+            },
+            labsEspecificos: {
+                cortisol_salivar: { nome: "Cortisol Salivar Noturno (23h) & Teste com Dexa 8mg", res: "Cortisol Noturno: 0.92 μg/dL (Alto) | Supressão de alta dose (>65% de queda do cortisol)", ref: "Normal: < 0.10", alt: true },
+                acth: { nome: "ACTH Plasmático", res: "125 pg/mL (Alto)", ref: "10 a 60 pg/mL", alt: true },
+                rm_sela: { nome: "RM de Sela Túrcica", res: "Microadenoma hipofisário corticotrófico de 7 mm.", ref: "Normal", alt: true }
+            },
+            correto: "Doença de Cushing (adenoma hipofisário produtor de ACTH)",
+            diferenciais: ["Síndrome de Cushing por uso crônico de corticoide exógeno", "Doença de Addison autoimune (insuficiência adrenal primária)", "Feocromocitoma com crises hipertensivas paroxísticas"],
+            explicacao: "Doença de Cushing: etiologia hipofisária da síndrome de Cushing por microadenoma secretor de ACTH. Apresenta ACTH inadequado para o grau de hipercortisolismo e responde caracteristicamente com supressão de cortisol após altas doses de dexametasona (8 mg)."
+        },
+        {
+            id: 46,
+            nome: "Gustavo Morais, 50 anos",
+            apresentacao: "Paciente com osteoporose grave com fratura vertebral espontânea, estrias violáceas e obesidade central fazendo uso de 'fórmula caseira' para dores articulares.",
+            perguntas: {
+                historia: "Comprei um remédio natural em cápsulas milagroso para dor na coluna há 2 anos. Fiquei inchado e quebrei uma costela tossindo.",
+                revisao: "Hematomas espontâneos nos braços e pernas muito finas.",
+                habitos: "Uso contínuo de fórmula que continha Dexametasona oculta não rotulada.",
+                exame_fisico: "Equimoses extensas, atrofia muscular proximal e giba dorsal."
+            },
+            labsEspecificos: {
+                cortisol_8h: { nome: "Cortisol Sérico Basal (8h)", res: "< 1.0 μg/dL (Cortisol endógeno totalmente zerado)", ref: "5 a 25 μg/dL", alt: true },
+                acth: { nome: "ACTH Plasmático", res: "< 5 pg/mL (Completamente suprimido pelo esteroide exógeno)", ref: "10 a 60 pg/mL", alt: true },
+                tc_abdome: { nome: "TC de Suprarrenais", res: "Ambas as adrenais atróficas por supressão crônica.", ref: "Normal", alt: true }
+            },
+            correto: "Síndrome de Cushing por uso crônico de corticoide exógeno",
+            diferenciais: ["Doença de Cushing (adenoma hipofisário produtor de ACTH)", "Insuficiência adrenal secundária por suspensão abrupta de corticoide crônico", "Hiperaldosteronismo primário (síndrome de Conn) com hipertensão resistente"],
+            explicacao: "Síndrome de Cushing Exógena (farmacológica): o esteroide sintético exógeno (dexametasona) causa os sintomas periféricos de hipercortisolismo tecidual mas não é dosado nos imunoensaios comuns de cortisol sérico, resultando no paradoxo clínico de cushingóide com cortisol e ACTH laboratoriais zerados."
+        },
+        {
+            id: 47,
+            nome: "Alberto Gusmão, 43 anos",
+            apresentacao: "Homem com paroxismos súbitos de cefaleia pulsátil, sudorese profusa e palpitações associadas a picos hipertensivos de 230x120 mmHg.",
+            perguntas: {
+                historia: "Tenho ataques súbitos onde meu coração dispara a 160 bpm, começo a tremer, empalideço e sinto que vou morrer.",
+                revisao: "As crises duram de 15 a 30 minutos e passam sozinhas.",
+                habitos: "Sem uso de cocaína ou descongestionantes.",
+                exame_fisico: "PA durante a crise no consultório: 240x130 mmHg com palidez cutânea e sudorese intensa."
+            },
+            labsEspecificos: {
+                metanefrinas: { nome: "Metanefrinas Livres Plasmáticas e Urinárias", res: "Normetanefrina Plasmática: 12x acima do limite superior", ref: "Dentro dos limites", alt: true },
+                tc_abdome: { nome: "TC de Abdômen com Contraste", res: "Massa tumoral sólida hipervascularizada de 5 cm com áreas císticas na medula da suprarrenal esquerda.", ref: "Normal", alt: true }
+            },
+            correto: "Feocromocitoma com crises hipertensivas paroxísticas",
+            diferenciais: ["Hiperaldosteronismo primário (síndrome de Conn) com hipertensão resistente", "Tempestade tireoidiana precipitada por infecção", "Doença de Cushing (adenoma hipofisário produtor de ACTH)"],
+            explicacao: "Tumor secretor de catecolaminas originado das células cromafins da medula adrenal. A liberação paroxística de noradrenalina e adrenalina estimula receptores alfa-1 e beta-1, desencadeando a clássica tríade: cefaleia, sudorese e palpitações com hipertensão crítica."
+        },
+        {
+            id: 48,
+            nome: "Recém-Nascida Laura, 14 dias de vida",
+            apresentacao: "Bebê com genitália ambígua (virilização com clitoromegalia e fusão labioescrotal) que evolui na segunda semana com desidratação, vômitos e choque hiponatrêmico.",
+            perguntas: {
+                historia: "A criança nasceu com dúvida quanto ao sexo e começou a vomitar e perder muito peso desde ontem.",
+                revisao: "Sem diarreia infecciosa prévia.",
+                habitos: "Cariótipo 46,XX confirmado.",
+                exame_fisico: "Genitália feminina virilizada (Prader 3), desidratada grave, hipotensa com má perfusão."
+            },
+            labsEspecificos: {
+                "17ohp": { nome: "17-Hidroxiprogesterona (17-OHP) Sérica", res: "180 ng/mL (Extremamente Elevada)", ref: "< 2.0 ng/mL", alt: true },
+                acth: { nome: "ACTH Plasmático", res: "540 pg/mL (Acentuadamente Alto por ausência de cortisol)", ref: "10 a 60 pg/mL", alt: true },
+                sodio: { nome: "Sódio Sérico (Na+)", res: "116 mEq/L (Hiponatremia Severa)", ref: "135 a 145 mEq/L", alt: true },
+                potassio: { nome: "Potássio Sérico (K+)", res: "7.8 mEq/L (Hipercalemia Crítica)", ref: "3.5 a 5.0 mEq/L", alt: true }
+            },
+            correto: "Hiperplasia adrenal congênita clássica (deficiência de 21-hidroxilase) em recém-nascido",
+            diferenciais: ["Hipotireoidismo congênito detectado no teste do pezinho", "Doença de Addison autoimune (insuficiência adrenal primária)", "Crise addisoniana precipitada por estresse cirúrgico"],
+            explicacao: "Deficiência da enzima 21-hidroxilase (forma perdedora de sal). O bloqueio enzimático desvia o colesterol acumulado exclusivamente para a via dos andrógenos (virilização em fetos 46,XX), enquanto a ausência de aldosterona e cortisol desencadeia crise perdedora de sal fatal com hiponatremia e hipercalemia."
+        },
+        {
+            id: 49,
+            nome: "Marcio Fagundes, 46 anos",
+            apresentacao: "Homem com hipertensão arterial refratária ao uso de 4 anti-hipertensivos em doses máximas associada a fraqueza muscular por hipocalemia.",
+            perguntas: {
+                historia: "Tomo 4 remédios fortes de pressão e minha pressão não baixa de 170x105 mmHg; sinto cãibras constantes nas panturrilhas.",
+                revisao: "Poliúria noturna e fadiga muscular.",
+                habitos: "Sem uso de diuréticos de alça ou tiazídicos.",
+                exame_fisico: "PA 175x110 mmHg confirmada; sem sopro abdominal ou estigmas de Cushing."
+            },
+            labsEspecificos: {
+                aldosterona_renina: { nome: "Relação Aldosterona / Atividade de Renina (Razão ARR)", res: "Aldosterona: 38 ng/dL | Renina: 0.2 ng/mL/h | Razão ARR = 190 (Positiva)", ref: "ARR > 30 com Aldo > 15", alt: true },
+                potassio: { nome: "Potássio Plasmático", res: "2.8 mEq/L (Hipocalemia importante)", ref: "3.5 a 5.0 mEq/L", alt: true },
+                gasometria: { nome: "Gasometria Arterial", res: "Bicarbonato: 31 mEq/L (Alcalose Metabólica)", ref: "22 a 26 mEq/L", alt: true },
+                tc_abdome: { nome: "TC de Abdômen", res: "Nódulo cortical solitário de 1,6 cm na suprarrenal direita (Adenoma de Conn).", ref: "Normal", alt: true }
+            },
+            correto: "Hiperaldosteronismo primário (síndrome de Conn) com hipertensão resistente",
+            diferenciais: ["Feocromocitoma com crises hipertensivas paroxísticas", "Doença de Cushing (adenoma hipofisário produtor de ACTH)", "Síndrome de Cushing por uso crônico de corticoide exógeno"],
+            explicacao: "Síndrome de Conn (hiperaldosteronismo primário): adenoma autônomo da zona glomerulosa. A aldosterona atua descontroladamente nos túbulos coletores ativando canais ENaC e bombas de prótons, causando retenção de Na+ e hipertensão hipervolêmica, acompanhada de espoliação de K+ (hipocalemia) e de H+ (alcalose metabólica) com renina suprimida."
+        },
+        {
+            id: 50,
+            nome: "Orlando Peçanha, 52 anos",
+            apresentacao: "Paciente addisoniano conhecido submetido a colecistectomia de urgência sem cobertura profilática de corticoide, entrando em choque circulatório refratário a noradrenalina.",
+            perguntas: {
+                historia: "A equipe cirúrgica relata que o paciente operou há 6 horas e evoluiu no pós-operatório imediato com choque refratário a aminas e volume.",
+                revisao: "Histórico prévio de insuficiência adrenal.",
+                habitos: "A dose habitual de hidrocortisona foi suspensa no jejum cirúrgico e não foi feita hidrocortisona venosa.",
+                exame_fisico: "Comatoso, má perfusão, PA 60x30 mmHg refratária à infusão contínua de noradrenalina em dose alta."
+            },
+            labsEspecificos: {
+                cortisol_8h: { nome: "Cortisol Sérico sob Choque Cirúrgico", res: "1.2 μg/dL (Deveria estar > 35 μg/dL em vigência de estresse cirúrgico)", ref: "> 25 μg/dL em choque", alt: true },
+                acth: { nome: "ACTH Plasmático", res: "510 pg/mL (Extremamente Alto)", ref: "10 a 60 pg/mL", alt: true },
+                potassio: { nome: "Potássio Sérico (K+)", res: "6.5 mEq/L (Hipercalemia Severa)", ref: "3.5 a 5.0 mEq/L", alt: true },
+                glicemia: { nome: "Glicemia de Jejum", res: "42 mg/dL (Hipoglicemia grave)", ref: "70 a 99 mg/dL", alt: true }
+            },
+            correto: "Crise addisoniana precipitada por estresse cirúrgico",
+            diferenciais: ["Doença de Addison autoimune (insuficiência adrenal primária)", "Insuficiência adrenal secundária por suspensão abrupta de corticoide crônico", "Coma mixedematoso em idoso com hipotireoidismo não tratado"],
+            explicacao: "Crise Addisoniana aguda / Colapso Adrenal. O estresse de uma cirurgia exige elevação maciça de cortisol para manter a reatividade vascular às catecolaminas. Na falta de suplementação com doses de estresse, ocorre colapso vascular distributivo agudo, hipoglicemia e hipercalemia com risco iminente de assistolia."
+        }
+    ];
+
+    let indiceAtual = 0;
+    let pontuacao = 0;
+    let examesSolicitadosNesteCaso = [];
+
+    function inicializarNavegacao() {
+        const select = document.getElementById('jump-select');
+        select.innerHTML = '';
+        casos.forEach((c, idx) => {
+            const opt = document.createElement('option');
+            opt.value = idx;
+            opt.innerText = `Caso ${c.id}: ${c.nome}`;
+            select.appendChild(opt);
+        });
+
+        select.onchange = function(e) {
+            indiceAtual = parseInt(e.target.value, 10);
+            carregarCasoAtual();
+        };
+    }
+
+    function carregarCasoAtual() {
+        const caso = casos[indiceAtual];
+        document.getElementById('case-progress').innerText = `Caso ${caso.id} de ${casos.length}`;
+        document.getElementById('jump-select').value = indiceAtual;
+
+        document.getElementById('patient-name').innerText = caso.nome;
+        document.getElementById('patient-description').innerText = caso.apresentacao;
+        document.getElementById('dialogue-text').innerText = "Toque em uma das opções acima para interrogar o paciente...";
+        
+        document.getElementById('lab-table').style.display = "none";
+        document.getElementById('lab-tbody').innerHTML = "";
+        document.getElementById('feedback-card').style.display = "none";
+        document.getElementById('btn-next-case').style.display = "none";
+        document.getElementById('exam-select').value = "";
+        examesSolicitadosNesteCaso = [];
+
+        const containerOpcoes = document.getElementById('options-container');
+        containerOpcoes.innerHTML = '';
+        
+        const opcoes = [caso.correto, ...caso.diferenciais];
+        opcoes.sort(() => Math.random() - 0.5);
+
+        opcoes.forEach(opcao => {
+            const label = document.createElement('label');
+            label.className = 'option-label';
+            label.innerHTML = `
+                <input type="radio" name="diag-option" value="${opcao}">
+                <span>${opcao}</span>
+            `;
+            containerOpcoes.appendChild(label);
+        });
+    }
+
+    function fazerPergunta(topico) {
+        const caso = casos[indiceAtual];
+        document.getElementById('dialogue-text').innerText = `"${caso.perguntas[topico]}"`;
+    }
+
+    function solicitarExameEspecifico() {
+        const select = document.getElementById('exam-select');
+        const exameKey = select.value;
+
+        if (!exameKey) {
+            alert("Selecione um parâmetro na lista.");
+            return;
+        }
+
+        if (examesSolicitadosNesteCaso.includes(exameKey)) {
+            alert("Este exame já foi emitido pelo laboratório.");
+            return;
+        }
+
+        const caso = casos[indiceAtual];
+        let dadosExame;
+
+        if (caso.labsEspecificos && caso.labsEspecificos[exameKey]) {
+            dadosExame = caso.labsEspecificos[exameKey];
+        } else if (referenciaPadrao[exameKey]) {
+            dadosExame = referenciaPadrao[exameKey];
+        } else {
+            dadosExame = { nome: "Exame Específico", res: "Normal", ref: "Normal", alt: false };
+        }
+
+        examesSolicitadosNesteCaso.push(exameKey);
+
+        document.getElementById('lab-table').style.display = "table";
+        const tbody = document.getElementById('lab-tbody');
+        
+        const tr = document.createElement('tr');
+        const badgeClass = dadosExame.alt ? 'badge-altered' : 'badge-normal';
+        const statusTxt = dadosExame.alt ? 'ALTERADO ⚠️' : 'Normal';
+
+        tr.innerHTML = `
+            <td>${dadosExame.nome}</td>
+            <td><strong>${dadosExame.res}</strong></td>
+            <td>${dadosExame.ref}</td>
+            <td><span class="status-badge ${badgeClass}">${statusTxt}</span></td>
+        `;
+        tbody.appendChild(tr);
+        select.value = "";
+    }
+
+    function avaliarEscolha() {
+        const selecionado = document.querySelector('input[name="diag-option"]:checked');
+        if (!selecionado) {
+            alert("Selecione uma hipótese diagnóstica.");
+            return;
+        }
+
+        const caso = casos[indiceAtual];
+        const feedback = document.getElementById('feedback-card');
+        feedback.style.display = "block";
+
+        if (selecionado.value === caso.correto) {
+            pontuacao += 100;
+            document.getElementById('score-display').innerText = `Pontos: ${pontuacao}`;
+            feedback.className = "feedback-box feedback-correct";
+            feedback.innerHTML = `<strong>✅ Diagnóstico Correto: ${caso.correto}</strong><br><br><strong>Fisiopatologia & Diagnóstico Diferencial:</strong><br>${caso.explicacao}`;
+        } else {
+            feedback.className = "feedback-box feedback-incorrect";
+            feedback.innerHTML = `<strong>❌ Incorreto. O diagnóstico selecionado (${selecionado.value}) foi descartado.</strong><br><br><strong>O diagnóstico correto é: ${caso.correto}</strong><br><br><strong>Fundamento Fisiopatológico:</strong><br>${caso.explicacao}`;
+        }
+
+        document.getElementById('btn-next-case').style.display = "block";
+    }
+
+    function proximoCaso() {
+        if (indiceAtual < casos.length - 1) {
+            indiceAtual++;
+            carregarCasoAtual();
+        } else {
+            alert(`Parabéns! Você concluiu todos os 50 casos!\nPontuação: ${pontuacao} de ${casos.length * 100}.`);
+            indiceAtual = 0;
+            pontuacao = 0;
+            document.getElementById('score-display').innerText = `Pontos: ${pontuacao}`;
+            carregarCasoAtual();
+        }
+    }
+
+    function casoAnterior() {
+        if (indiceAtual > 0) {
+            indiceAtual--;
+            carregarCasoAtual();
+        }
+    }
+
+    inicializarNavegacao();
+    carregarCasoAtual();
+</script>
+
+</body>
+</html>
